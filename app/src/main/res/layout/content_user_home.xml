@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.yashada.callmanager.userHome"
+    tools:showIn="@layout/app_bar_user_home">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/layout">
+            <ImageView
+                android:id="@+id/header_cover_image"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerCrop"
+                android:src="@drawable/nav_menu_header_bg"
+                app:srcCompat="@drawable/nav_menu_header_bg" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+
+                android:clickable="true"
+                app:civ_border_width="3dp"
+                app:civ_border_color="#FFFFFFFF"
+
+                android:id="@+id/profile"
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:layout_below="@+id/header_cover_image"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="-80dp"
+                android:elevation="5dp"
+                android:padding="20dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/man" />
+
+            <RelativeLayout
+                android:id="@+id/profile_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/header_cover_image"
+                android:background="#ebca0707"
+                android:elevation="4dp"
+                android:paddingBottom="5dp">
+                <TextView
+                    android:id="@+id/login_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="35dp"
+                    android:text=""
+                    android:textColor="#fff"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/designation"
+                    android:layout_centerHorizontal="true"
+                    android:visibility="gone"
+                    android:layout_marginTop="5dp"
+                    android:text="Surat"
+                    android:textColor="#fff"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/login_engineer_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/login_name"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="0dp"
+                    android:text=""
+                    android:textColor="#fff"
+                    android:textSize="15sp" />
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="10dp"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/new_call"
+                            android:layout_width="230dp"
+                            android:layout_height="99dp"
+                            android:layout_gravity="center_horizontal"
+                            android:src="@drawable/select"
+                            android:onClick="showNewCall"
+                            android:text="0"
+                            android:textSize="30dp"
+                            android:padding="25dp"
+                            android:background="#4285F4"
+                            android:textColor="#fff"
+                            />
+                        <TextView
+                            android:id="@+id/new_call_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@id/new_call"
+                            android:layout_alignRight="@id/new_call"
+                            android:layout_gravity="top|start"
+                            android:text="10"
+                            android:translationZ="@dimen/activity_horizontal_margin"
+                            android:visibility="gone"
+                            android:textColor="#FFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:background="@drawable/badge_circle"/>
+
+                        <TextView
+                            android:id="@+id/textView2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:gravity="center_horizontal"
+                            android:layout_below="@id/new_call"
+                            android:padding="10dp"
+                            android:text="New Call" />
+
+                    </RelativeLayout>
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="10dp"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/open_call"
+                            android:layout_width="230dp"
+                            android:layout_height="99dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="#0d47a1"
+                            android:onClick="showOpenCall"
+                            android:padding="25dp"
+                            android:src="@drawable/select"
+                            android:text="0"
+                            android:textColor="#fff"
+                            android:textSize="30dp" />
+                        <TextView
+                            android:id="@+id/new_open_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@id/open_call"
+                            android:layout_alignRight="@id/open_call"
+                            android:layout_gravity="top|start"
+                            android:text="10"
+                            android:translationZ="@dimen/activity_horizontal_margin"
+                            android:textColor="#FFF"
+                            android:textSize="16sp"
+                            android:visibility="gone"
+                            android:textStyle="bold"
+                            android:background="@drawable/badge_circle"/>
+
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:padding="10dp"
+                            android:layout_below="@id/open_call"
+                            android:gravity="center_horizontal"
+                            android:text="Open Call"/>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="10dp"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/pending_call"
+                            android:layout_width="230dp"
+                            android:layout_height="99dp"
+                            android:text="0"
+                            android:textSize="30dp"
+                            android:onClick="showPendingCall"
+                            android:padding="25dp"
+                            android:layout_gravity="center_horizontal"
+                            android:textColor="#fff"
+                            android:background="#FF8800"
+                            android:src="@drawable/select" />
+                        <TextView
+                            android:id="@+id/new_pending_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignTop="@id/pending_call"
+                            android:layout_alignRight="@id/pending_call"
+                            android:layout_gravity="top|start"
+                            android:text="10"
+                            android:translationZ="@dimen/activity_horizontal_margin"
+                            android:textColor="#FFF"
+                            android:visibility="gone"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:background="@drawable/badge_circle"/>
+
+                        <TextView
+                            android:id="@+id/textView3"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:gravity="center_horizontal"
+                            android:padding="10dp"
+                            android:layout_below="@id/pending_call"
+                            android:text="Pending Call" />
+
+                    </RelativeLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="10dp"
+                        android:orientation="vertical">
+
+                        <Button
+                            android:id="@+id/closed_call"
+                            android:layout_width="230dp"
+                            android:layout_height="99dp"
+                            android:layout_gravity="center_horizontal"
+                            android:background="#00C851"
+                            android:onClick="showResolvedCall"
+                            android:textColor="#fff"
+                            android:padding="25dp"
+                            android:src="@drawable/select"
+                            android:text="0"
+                            android:textSize="30dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:gravity="center_horizontal"
+                            android:padding="10dp"
+                            android:text="Resolved Call"/>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <ImageView
+                        android:id="@+id/graph"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+
+
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
