@@ -87,6 +87,7 @@ public class locationService extends Service  {
         super.onTaskRemoved(rootIntent);
     }
     public void initializeTimerTask(final String userName,final String userId,final String companyId) {
+
         LocationManager locationManager = (LocationManager) getBaseContext()
                 .getSystemService(LOCATION_SERVICE);
         checkGPS = locationManager
@@ -133,9 +134,14 @@ public class locationService extends Service  {
 
                 loc = locationManager
                         .getLastKnownLocation(provider);
-                latitude = loc.getLatitude();
-                longitude = loc.getLongitude();
-                location = latitude+","+longitude;
+                if(loc!=null){
+                    latitude = loc.getLatitude();
+                    longitude = loc.getLongitude();
+                    location = latitude+","+longitude;
+                } else {
+                    Log.e("Unable to get", "Location");
+                }
+
 
             } else {
                 Log.e("Unable to get", "Location");
