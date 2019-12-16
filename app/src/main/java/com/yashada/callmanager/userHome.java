@@ -1,16 +1,24 @@
 package com.yashada.callmanager;
 
+import android.Manifest;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -41,9 +49,10 @@ public class userHome extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ontaskComplet {
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
-    public String USERNAME= "loginEmail";
+
     public String PASSWORD="loginPassword";
     public static final String PREFS_NAME = "user_details";
+    public String USERNAME= "loginEmail";
     public String UserId="userId";
     public String CompanyId="companyId";
     public String USERROLE="Role";
@@ -55,7 +64,55 @@ public class userHome extends AppCompatActivity
     Integer count=0;
     UrlClass urlClass;
     boolean checkInternet;
+    Intent intentL,intentN;
     CheckConnectivity checkConnectivity;
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                Log.i ("Service status", "Running");
+                return true;
+            }
+        }
+        Log.i ("Service status", "Not running");
+        return false;
+    }
+    @Override
+    protected void onDestroy() {
+        Log.i("MAINACT", "onDestroy!");
+        stopService(intentL);
+        stopService(intentN);
+
+        super.onDestroy();
+
+    }
+
+    public void showSettingsAlert() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getApplicationContext());
+
+
+        alertDialog.setTitle("GPS is not Enabled!");
+
+        alertDialog.setMessage("Do you want to turn on GPS?");
+
+
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+        });
+
+
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+
+        alertDialog.show();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +125,34 @@ public class userHome extends AppCompatActivity
         urlClass = new UrlClass(userHome.this);
         checkInternet = urlClass.checkInternet();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        intentN = new Intent(userHome.this,check_notification.class);
+        intentL = new Intent(userHome.this,locationService.class);
+        if (!isMyServiceRunning(check_notification.class)) {
+
+            startService(intentN);
+        }
+        if(!isMyServiceRunning(locationService.class)){
+            try{
+
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    showSettingsAlert();
+                } else {
+                    startService(intentL);
+                }
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+
+
+        }
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

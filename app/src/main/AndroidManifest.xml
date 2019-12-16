@@ -20,9 +20,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <receiver
-            android:name=".CheckConnectivity"
-            android:enabled="true" />
 
         <activity
             android:name=".SplashScreen"
@@ -35,11 +32,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        |
+
         <service
             android:name=".check_notification"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false"
+            android:stopWithTask="false"/>
+        <service
+            android:name=".locationService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false"/>
 
         <activity
             android:name=".newCall"
@@ -66,7 +69,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".userHome"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:stopWithTask="false"/>
         <activity
             android:name=".tabCallDetails"
             android:screenOrientation="portrait" />
@@ -85,6 +89,20 @@
             android:name=".notificationDetails"
             android:label="@string/title_activity_notification_details"
             android:theme="@style/AppTheme" />
+        <receiver
+            android:name=".CheckConnectivity"
+            android:enabled="true" />
+        <receiver
+            android:name="Restarter"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped"/>
+        <receiver
+            android:name=".ServiceRestarter"
+            android:enabled="true"
+            android:exported="true"
+            android:label="LocaionService"/>
+
     </application>
 
 </manifest>

@@ -1,8 +1,12 @@
 package com.yashada.callmanager;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.provider.Settings;
 
 /**
  * Created by Admin on 2/1/2018.
@@ -49,4 +53,31 @@ public class UrlClass {
         return status;
 
     }
+    public void showSettingsAlert() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+
+
+        alertDialog.setTitle("GPS is not Enabled!");
+
+        alertDialog.setMessage("Do you want to turn on GPS?");
+
+
+        alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                context.startActivity(intent);
+            }
+        });
+
+
+        alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+
+        alertDialog.show();
+    }
+
 }
