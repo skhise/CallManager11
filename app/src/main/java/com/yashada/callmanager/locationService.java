@@ -21,6 +21,12 @@ import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+import org.ksoap2.SoapEnvelope;
+import org.ksoap2.serialization.SoapObject;
+import org.ksoap2.serialization.SoapSerializationEnvelope;
+import org.ksoap2.transport.HttpTransportSE;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,6 +39,7 @@ public class locationService extends Service  {
     double latitude;
     double longitude;
     public int counter=0;
+    UrlClass urlClass;
 
     String location = "";
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
@@ -55,6 +62,7 @@ public class locationService extends Service  {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
         final String PREFS_NAME = "user_details";
+        urlClass = new UrlClass(getApplicationContext());
          String USERNAME= "loginEmail";
          String UserId="userId";
          String CompanyId="companyId";
@@ -151,7 +159,8 @@ public class locationService extends Service  {
         timerTask = new TimerTask() {
             public void run() {
                 Log.i("in timer", "in timer ++++  "+ (counter++));
-                new updateLocation().execute(userName,userId,companyId);
+                String locc = latitude+","+longitude;
+                new updateLocation().execute(userName,userId,companyId,locc);
             }
         };
     }
@@ -191,22 +200,59 @@ public class locationService extends Service  {
     }
     public class updateLocation extends AsyncTask<String,String,String>{
 
+        String url = urlClass.getUrl();
+        String NameSpace = urlClass.NameSpace();
+
 
         @Override
         protected String doInBackground(String... doubles) {
 
-            String userName = doubles[0];
+
             String userId = doubles[1];
-            String companyId = doubles[2];
-            String out = "userName:"+userName+"userId:"+userId+"companyId:"+companyId;
-            return out;
+            String location = doubles[3];
+
+            String result = "";
+
+            String SOAP_ACTION = NameSpace+"updateEnginnerLocation";
+            SoapObject request = new SoapObject(NameSpace, "updateEnginnerLocation");
+            request.addProperty("userId",userId);
+            request.addProperty("location",location);
+            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+            envelope.setOutputSoapObject(request);
+            envelope.dotNet = true;
+            HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
+            try {
+                androidHttpTransport.call(SOAP_ACTION, envelope);
+
+                result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
+                if(request.equals("")){
+                    Object re= null;
+                    re = envelope.getResponse();
+                    return re.toString();
+                }
+                return  result;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return result;
         }
 
         @Override
         protected void onPostExecute(String setting) {
             super.onPostExecute(setting);
             //Toast.makeText(ge, "Location:"+setting, Toast.LENGTH_SHORT).show();
-            Log.e("Location",setting+""+latitude+","+longitude);
+            Log.e("Location out",setting+""+latitude+","+longitude);
+            if(setting!="" && setting!=null && !setting.isEmpty()){
+                try{
+                    JSONObject jsonObject = new JSONObject(setting);
+                    Integer code = jsonObject.getInt("code");
+                }catch (Exception ee){
+                    Log.e("location update:", ee.getLocalizedMessage());
+                }
+
+            } else {
+                Log.e("Location Update Esle",setting+""+latitude+","+longitude);
+            }
 
         }
     }
