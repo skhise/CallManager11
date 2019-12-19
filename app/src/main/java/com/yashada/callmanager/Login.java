@@ -169,10 +169,14 @@ public class Login extends AppCompatActivity{
                                 editor.putString(USERCNAME,CompanyName);
                                 editor.putBoolean(IsCompanyActive,IsActiveCompany);
                                 editor.putBoolean(IsUserActive,IsActive);
-                                editor.apply();
-                                editor.commit();
+
+
                                 Intent userHome = new Intent(Login.this, userHome.class);
                                 startActivity(userHome);
+                                editor.putString("online","1");
+                                editor.apply();
+                                editor.commit();
+                                startService(new Intent(Login.this,onlineService.class));
                             } catch (Exception ee){
                                 Toast.makeText(getApplicationContext(),"Error in read user input"+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                             }

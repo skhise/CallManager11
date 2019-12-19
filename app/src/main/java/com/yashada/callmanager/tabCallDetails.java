@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.MailTo;
 import android.net.Uri;
@@ -161,7 +162,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     Log.e("clickedId->",cId+"");
                     if(checkInternet){
                         new getCallDetails().execute(logedUserID,cId,CompanyID);
-                        new share_user_location().execute(logedUserID);
+                        userLocation =  share_user_location();
                     }else{
                         onTaskCompleted("Internet connection failed, please check");
                     }
@@ -500,7 +501,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                     checkInternet = urlClass.checkInternet();
                                     if(checkInternet){
                                         try{
-                                            new share_user_location().execute(logedUserID);
+                                            userLocation =  share_user_location();
                                         }catch (Exception e){
                                             onTaskCompleted(e.getLocalizedMessage()+" location share error");
                                         }
@@ -712,144 +713,73 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         View footerView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_footer_view, null, false);
         //    chat_message_list.addFooterView(footerView);
     }
-    class share_user_location extends AsyncTask<Integer,String,String>{
+    public String share_user_location(){
+        Location loc;
+        double latitude;
+        double longitude;
+        LocationManager locationManager = (LocationManager) getBaseContext()
+                .getSystemService(LOCATION_SERVICE);
+        boolean checkGPS = locationManager
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
 
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        Location lastKnownLocationGps=null;
-        Location lastKnownLocationNetwork = null;
-        double lat=00;
-        double log=00;
-        boolean isGPSEnabled = false;
-        boolean isNetworkEnabled = false;
-        public boolean canGetLocation = false;
-        String userLocation="";
-
-        private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-        private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
-        public ProgressDialog dialog =
-                new ProgressDialog(tabCallDetails.this);
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog.setMessage("Updating call");
-            dialog.show();
+        // get network provider status
+        boolean checkNetwork = locationManager
+                .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        String provider = "";
+        if (checkGPS) {
+            provider = LocationManager.GPS_PROVIDER;
+        } else if (checkNetwork) {
+            provider = LocationManager.NETWORK_PROVIDER;
         }
+        checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+        checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
 
-        @Override
-        protected String doInBackground(Integer... integers) {
-            try{
-                String result = "";
-                Integer UserID = integers[0];
-                CompanyID    = sharedpreferences.getInt(CompanyId,0);
-                LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-                isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        if (provider.equals("")) {
+            Log.e("Unable to get provider", "check setting");
+        } else {
+            locationManager.requestLocationUpdates(provider, 0, 0, new LocationListener() {
+                @Override
+                public void onLocationChanged(Location location) {
 
-                if(isNetworkEnabled){
-                    if(checkPermission(Manifest.permission.ACCESS_NETWORK_STATE)){
-                        lastKnownLocationNetwork = locationManager.getLastKnownLocation(networkLocationProvider);
-                        lat = lastKnownLocationNetwork.getLatitude();
-                        log = lastKnownLocationNetwork.getLongitude();
-                    } else{
-                        lat=00;
-                        log=00;
-                    }
-                }
-                if (isGPSEnabled){
-                    if(checkPermission(Manifest.permission.ACCESS_FINE_LOCATION)){
-                        lastKnownLocationGps   = locationManager.getLastKnownLocation(gpsLocationProvider);
-                        lat = lastKnownLocationGps.getLatitude();
-                        log = lastKnownLocationGps.getLongitude();
-                    }else{
-                        lat=00;
-                        log=00;
-                    }
                 }
 
-//                if(lastKnownLocationGps!=null){
-//
-//                } else if(lastKnownLocationNetwork!=null){
-//
-//                } else {
-//                    Log.e("Location","unable to get location");
-//                }
-                //    Log.e("lat",""+lastKnownLocationGps.getLatitude());
-                //  Log.e("lat",""+lastKnownLocationGps.getLongitude());
-                if(lat!=00 && log!=00){
-                    userLocation = lat+","+log;
-                    Geocoder geocoder;
-                    List<Address> addresses;
-                    geocoder = new Geocoder(tabCallDetails.this, Locale.getDefault());
-//                    try {
-//                        addresses = geocoder.getFromLocation(lat, log, 1);
-//                        String address = addresses.get(0).getAddressLine(0);
-//                        String city = addresses.get(0).getLocality();
-//                        String state = addresses.get(0).getAdminArea();
-//                        String country = addresses.get(0).getCountryName();
-//                        String postalCode = addresses.get(0).getPostalCode();
-//                        String knownName = addresses.get(0).getFeatureName();
-//                        result = address + "\n" + knownName;
-//                        String SOAP_ACTION = NameSpace + "AddEngineerLocation";
-//                        SoapObject request = new SoapObject(NameSpace, "AddEngineerLocation");
-//                        request.addProperty("UserID", UserID);
-//                        request.addProperty("location", address);
-//                        request.addProperty("companyId", CompanyID);
-//                        request.addProperty("Lat", String.format("%.2f", lat));
-//                        request.addProperty("Long", String.format("%.2f", log));
-//                        SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-//                        envelope.setOutputSoapObject(request);
-//                        envelope.dotNet = true;
-//                        HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-//                        try {
-//                            androidHttpTransport.call(SOAP_ACTION, envelope);
-////                            result = ((SoapObject) envelope.bodyIn).getProperty(0).toString();
-//                            if(envelope.bodyIn instanceof SoapFault){
-//                                String str= ((SoapFault) envelope.bodyIn).faultstring;
-//                                Log.e("eeeee", str);
-//                                result ="0";
-//                            } else {
-//                                result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-//                            }
-//
-//                            if(result.equals("")){
-//                                Object re= null;
-//                                re = envelope.getResponse();
-//
-//                                return re.toString();
-//                            }
-//
-//                            return result;
-//                        } catch (Exception e) {
-//                            System.out.println("Error" + e);
-//                            result ="0";
-//                            onTaskCompleted(e.getLocalizedMessage());
-//                        }
-//                    } catch (Exception ee){
-//                        result ="0";
-//                        Log.e("Location exception",ee.getLocalizedMessage());
-//                    }
+                @Override
+                public void onStatusChanged(String provider, int status, Bundle extras) {
+
+                }
+
+                @Override
+                public void onProviderEnabled(String provider) {
+
+                }
+
+                @Override
+                public void onProviderDisabled(String provider) {
+
+                }
+            });
+
+            if (locationManager != null) {
+
+                loc = locationManager
+                        .getLastKnownLocation(provider);
+                if (loc != null) {
+                    latitude = loc.getLatitude();
+                    longitude = loc.getLongitude();
+                    userLocation = latitude + "," + longitude;
+                    Log.e("userLocation",userLocation);
                 } else {
-                    result = "0";
-                    Log.e("Location ","Location not found");
+                    Log.e("Unable to get", "Location");
                 }
-                return result;
-            }catch (Exception ee){
-                return ee.getLocalizedMessage();
+
+
+            } else {
+                Log.e("Unable to get", "Location");
             }
         }
-        @Override
-        protected void onCancelled(String setting) {
-            super.onCancelled(setting);
+        return  userLocation;
         }
 
-        @Override
-        protected void onPostExecute(String setting) {
-            super.onPostExecute(setting);
-            dialog.hide();
-            Log.e("userLocation",userLocation);
-        }
-    }
     class applyActionOnCall extends AsyncTask<String,Integer,String>{
 
         String url = urlClass.getUrl();

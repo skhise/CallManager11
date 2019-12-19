@@ -29,6 +29,7 @@ tools:context="com.yashada.callmanager.userHome">
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/fab_margin"
+            android:visibility="gone"
             app:srcCompat="@drawable/ic_noti" />
 
         <android.support.design.widget.FloatingActionButton

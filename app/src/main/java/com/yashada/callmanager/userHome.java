@@ -65,6 +65,7 @@ public class userHome extends AppCompatActivity
     UrlClass urlClass;
     boolean checkInternet;
     Intent intentL,intentN;
+    TextView cmp;
     CheckConnectivity checkConnectivity;
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -120,6 +121,7 @@ public class userHome extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
+        sharedpreferences   = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         login_engineer_name = (TextView) findViewById(R.id.login_engineer_name);
         urlClass = new UrlClass(userHome.this);
@@ -130,6 +132,13 @@ public class userHome extends AppCompatActivity
         if (!isMyServiceRunning(check_notification.class)) {
 
             startService(intentN);
+        }
+
+        if(!isMyServiceRunning(onlineService.class)){
+            SharedPreferences.Editor editor =sharedpreferences.edit();
+            editor.putString("online","1");
+            editor.commit();
+            startService(new Intent(userHome.this,onlineService.class));
         }
         if(!isMyServiceRunning(locationService.class)){
             try{
@@ -157,7 +166,7 @@ public class userHome extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 try{
-                    sharedpreferences   = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+
                     String UserName     = sharedpreferences.getString(USERNAME,"");
                     Integer UserID       = sharedpreferences.getInt(UserId,0);
                     Integer CompanyID    = sharedpreferences.getInt(CompanyId,0);
@@ -212,8 +221,10 @@ public class userHome extends AppCompatActivity
             View header=navigationView.getHeaderView(0);
             TextView name = (TextView)header.findViewById(R.id.userName);
             TextView email = (TextView)header.findViewById(R.id.userEmail);
+            cmp = (TextView)header.findViewById(R.id.userCompanyName);
             name.setText(UserName);
             email.setText(UserName);
+
             if(!UserID.equals(0) && !CompanyID.equals(0)){
                 Log.e("UserID",""+UserID);
                 try{
@@ -241,7 +252,7 @@ public class userHome extends AppCompatActivity
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar,  R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
@@ -453,9 +464,14 @@ public class userHome extends AppCompatActivity
                 }
             } else if (id == R.id.log_out) {
                 try{
-                    sharedpreferences.edit().clear().commit();
-                    finish();
+                    stopService(new Intent(userHome.this,onlineService.class));
+                    SharedPreferences.Editor editor = sharedpreferences.edit();
+                    editor.putString("online","0");
+                    editor.apply();
+                    editor.commit();
+                    startService(new Intent(userHome.this,onlineService.class));
                     startActivity(new Intent(userHome.this,Login.class));
+                    finish();
                 }catch (Exception e){
                     onTaskCompleted(e.getMessage());
                 }
@@ -545,7 +561,7 @@ public class userHome extends AppCompatActivity
                     String Location = jsonObject.getString("Location");
                     TextView login_name_txt = (TextView) findViewById(R.id.login_name);
                     login_name_txt.setText(name);
-
+                    cmp.setText(name);
                 } catch (Exception ee){
                     Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                 }

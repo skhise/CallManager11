@@ -43,7 +43,11 @@
             android:enabled="true"
             android:exported="false"
             android:stopWithTask="false"/>
-
+        <service
+            android:name=".onlineService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false"/>
         <activity
             android:name=".newCall"
             android:label="@string/title_activity_new_call"
