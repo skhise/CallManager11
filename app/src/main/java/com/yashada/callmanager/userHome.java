@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,8 +35,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.location.LocationListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -71,6 +70,7 @@ public class userHome extends AppCompatActivity
     Intent intentL,intentN;
     TextView cmp;
     TextView gpsStatus;
+    LocationManager locationManager=null;
     CheckConnectivity checkConnectivity;
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -122,7 +122,8 @@ public class userHome extends AppCompatActivity
         alertDialog.show();
     }
     public void checkLocation(){
-        final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        locationManager  = (LocationManager) getSystemService(LOCATION_SERVICE);
+
         if(locationManager!=null){
             if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
                 gpsStatus.setText("Your gps service disabled, click here to enable.");
@@ -144,26 +145,33 @@ public class userHome extends AppCompatActivity
         } else {
             Log.e("Excp","Location null");
         }
-        LocationListener locationListener =  new LocationListener() {
+        LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
 
             }
 
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) {
+
+            }
+
+            @Override
             public void onProviderEnabled(String provider) {
-                if (provider == "gps") {
+                if(provider.equals("gps")){
                     checkLocation();
                 }
             }
 
+            @Override
             public void onProviderDisabled(String provider) {
-                if (provider == "gps") {
+                if(provider.equals("gps")){
                     checkLocation();
                 }
             }
-
         };
-      //  locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
+     //   locationManager.requestLocationUpdates("LocationManager.GPS_PROVIDER",0,0,locationListener);
+
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
