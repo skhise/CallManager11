@@ -70,6 +70,7 @@
                     android:layout_marginTop="20dp"
                     android:layout_weight="1"
                     android:background="@drawable/round"
+                    android:visibility="gone"
                     android:text="Cancel"
                     android:textColor="@color/white"
                     android:textSize="15dp"

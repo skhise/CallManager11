@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -32,6 +34,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.location.LocationListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -66,6 +70,7 @@ public class userHome extends AppCompatActivity
     boolean checkInternet;
     Intent intentL,intentN;
     TextView cmp;
+    TextView gpsStatus;
     CheckConnectivity checkConnectivity;
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -89,8 +94,8 @@ public class userHome extends AppCompatActivity
     }
 
     public void showSettingsAlert() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getApplicationContext());
-
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(userHome.this);
+        alertDialog.setCancelable(true);
 
         alertDialog.setTitle("GPS is not Enabled!");
 
@@ -101,6 +106,7 @@ public class userHome extends AppCompatActivity
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                 startActivity(intent);
+                checkLocation();
             }
         });
 
@@ -108,11 +114,56 @@ public class userHome extends AppCompatActivity
         alertDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
+                checkLocation();
             }
         });
 
 
         alertDialog.show();
+    }
+    public void checkLocation(){
+        final LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if(locationManager!=null){
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                gpsStatus.setText("Your gps service disabled, click here to enable.");
+            } else{
+                gpsStatus.setText("Gps service enabled");
+            }
+            gpsStatus.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                        showSettingsAlert();
+                    } else {
+                        checkLocation();
+
+                        Toast.makeText(userHome.this, "Gps service already enabled on your device", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } else {
+            Log.e("Excp","Location null");
+        }
+        LocationListener locationListener =  new LocationListener() {
+            @Override
+            public void onLocationChanged(Location location) {
+
+            }
+
+            public void onProviderEnabled(String provider) {
+                if (provider == "gps") {
+                    checkLocation();
+                }
+            }
+
+            public void onProviderDisabled(String provider) {
+                if (provider == "gps") {
+                    checkLocation();
+                }
+            }
+
+        };
+      //  locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,0,0,locationListener);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,12 +177,20 @@ public class userHome extends AppCompatActivity
         login_engineer_name = (TextView) findViewById(R.id.login_engineer_name);
         urlClass = new UrlClass(userHome.this);
         checkInternet = urlClass.checkInternet();
+        gpsStatus = (TextView) findViewById(R.id.gpsStatus);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
         intentN = new Intent(userHome.this,check_notification.class);
         intentL = new Intent(userHome.this,locationService.class);
         if (!isMyServiceRunning(check_notification.class)) {
 
             startService(intentN);
+        }
+        try{
+
+            checkLocation();
+        }catch (Exception e){
+            Log.e("Excp",e.getLocalizedMessage());
         }
 
         if(!isMyServiceRunning(onlineService.class)){
@@ -257,7 +316,27 @@ public class userHome extends AppCompatActivity
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
     }
-
+    private void showGPSDisabledAlertToUser(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("GPS is disabled in your device. Would you like to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Goto Settings Page To Enable GPS",
+                        new DialogInterface.OnClickListener(){
+                            public void onClick(DialogInterface dialog, int id){
+                                Intent callGPSSettingIntent = new Intent(
+                                        android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                                startActivity(callGPSSettingIntent);
+                            }
+                        });
+        alertDialogBuilder.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener(){
+                    public void onClick(DialogInterface dialog, int id){
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = alertDialogBuilder.create();
+        alert.show();
+    }
     public class AlarmReceiverLifeLog extends BroadcastReceiver {
 
         private static final String TAG = "LL24";

@@ -34,6 +34,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -113,7 +114,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     String selectedImage=null;
     private int REQUEST_CAMERA = 0, SELECT_FILE = 1;
     ImageView imageHolder;
-
+    Button btn_upload;
     TextView call_veiw_id,call_veiw_date,call_veiw_rnumber,call_veiw_productNumber,call_time,
             call_veiw_productBrand,call_veiw_productType,
             call_view_issueDetails,call_details_customerName,
@@ -539,9 +540,16 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     try{
                         Button b = (Button)view_other.findViewById(R.id.btn_camera_open);
                         imageHolder = (ImageView) view_other.findViewById(R.id.captured_image_other);
+                        btn_upload = (Button) view_other.findViewById(R.id.btn_upload);
                         b.setOnClickListener(new View.OnClickListener() {
                             public void onClick(View v) {
                                 selectImage();
+                            }
+                        });
+                        btn_upload.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                new upLoaData().execute();
                             }
                         });
                     }catch (Exception ee){
@@ -1132,6 +1140,84 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                 }
             } else{
                 onTaskCompleted("Unable to get details, try gain");
+            }
+        }
+    }
+    public class upLoaData extends AsyncTask<String,String, String> {
+
+        String url = urlClass.getUrl();
+        String NameSpace = urlClass.NameSpace();
+        public ProgressDialog dialog =
+                new ProgressDialog(tabCallDetails.this);
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.setMessage("Please wait...");
+            dialog.show();
+        }
+        @Override
+        protected String doInBackground(String... params) {
+            String result = "";
+            try {
+                String SOAP_ACTION = NameSpace+"uploadImage";
+                SoapObject request = new SoapObject(NameSpace, "uploadImage");
+                request.addProperty("invoiceImage",params[0]);
+                request.addProperty("companyId",params[1]);
+                request.addProperty("contractId",params[2]);
+                request.addProperty("callId",params[3]);
+                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+                envelope.setOutputSoapObject(request);
+                envelope.dotNet = true;
+                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
+                androidHttpTransport.call(SOAP_ACTION, envelope);
+                if(envelope.bodyIn instanceof SoapFault){
+                    String str= ((SoapFault) envelope.bodyIn).faultstring;
+                    Log.e("eeeee", str);
+                } else {
+                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
+                }
+                if (request.equals("")) {
+                    Object re = null;
+                    re = envelope.getResponse();
+                    return re.toString();
+                }
+            } catch (Exception ee){
+                onTaskCompleted(ee.getLocalizedMessage());
+            }
+            return  result;
+        }
+        protected void onCancelled() {
+            dialog.dismiss();
+            Toast toast = Toast.makeText(tabCallDetails.this,
+                    "Error connecting to Server", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.TOP, 25, 400);
+            toast.show();
+            /*show_local_db();*/
+        }
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            Log.e("err_string","==>"+result);
+            dialog.dismiss();
+            if(result!="" && !result.equals(null)){
+                try {
+                    if(result.equals("1")){
+                        Toast.makeText(getApplicationContext(),"Upload Successfully", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(tabCallDetails.this,tabCallDetails.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                    } else if(result.equals("0")){
+                        Toast.makeText(getApplicationContext(),"Error in upload", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(),"Server connection Failed,Error:"+result, Toast.LENGTH_LONG).show();
+                        Log.e("Ex",result);
+                    }
+
+                } catch (Exception ee){
+
+                    Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                }
+
+            } else {
+                Toast.makeText(getApplicationContext(),"Server connection Failed", Toast.LENGTH_LONG).show();
             }
         }
     }
