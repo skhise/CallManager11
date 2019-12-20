@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/CallManager.iml" filepath="$PROJECT_DIR$/CallManager.iml" />
       <module fileurl="file://$PROJECT_DIR$/CallManagerGit.iml" filepath="$PROJECT_DIR$/CallManagerGit.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

@@ -2,9 +2,11 @@ package com.yashada.callmanager;
 
 import android.*;
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -30,6 +32,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Layout;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -58,7 +61,10 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -103,6 +109,10 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     TextView pd_txt;
     String userLocation="";
     Button btn_add_description,btn_attend_call,btn_call_action;
+    String userChoosenTask="";
+    String selectedImage=null;
+    private int REQUEST_CAMERA = 0, SELECT_FILE = 1;
+    ImageView imageHolder;
 
     TextView call_veiw_id,call_veiw_date,call_veiw_rnumber,call_veiw_productNumber,call_time,
             call_veiw_productBrand,call_veiw_productType,
@@ -527,27 +537,11 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     layout_user.addView(view_other);
 
                     try{
-                        Button b = (Button)view_other.findViewById(R.id.btn_other_image);
+                        Button b = (Button)view_other.findViewById(R.id.btn_camera_open);
+                        imageHolder = (ImageView) view_other.findViewById(R.id.captured_image_other);
                         b.setOnClickListener(new View.OnClickListener() {
                             public void onClick(View v) {
-                                if(isDeviceSupportCamera()){
-                                    try{
-
-                                        /*Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                        fileUri = getOutputMediaFileUri(1);
-                                        intent.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);*/
-                                        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                                        startActivityForResult(cameraIntent, 100);
-                                        //   startActivityForResult(intent, 100);
-                                    }catch (Exception ee){
-                                        onTaskCompleted(ee.getLocalizedMessage());
-                                        Log.e("camera",ee.getLocalizedMessage());
-                                    }
-                                } else {
-                                    onTaskCompleted("Device not support ofr this action");
-                                }
-
-
+                                selectImage();
                             }
                         });
                     }catch (Exception ee){
@@ -561,6 +555,109 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         }
 
     };
+    private void selectImage() {
+        final CharSequence[] items = { "Take Photo", "Choose from Library",
+                "Cancel" };
+        AlertDialog.Builder builder = new AlertDialog.Builder(tabCallDetails.this);
+        builder.setTitle("Add Photo!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                boolean result= urlClass.checkPermission(tabCallDetails.this);
+                if (items[item].equals("Take Photo")) {
+                    userChoosenTask="Take Photo";
+                    if(result)
+                        cameraIntent();
+                } else if (items[item].equals("Choose from Library")) {
+                    userChoosenTask="Choose from Library";
+                    if(result)
+                        galleryIntent();
+                } else if (items[item].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
+    private void cameraIntent()
+    {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+    private void galleryIntent()
+    {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);//
+        startActivityForResult(Intent.createChooser(intent, "Select File"),SELECT_FILE);
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case UrlClass.MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if(userChoosenTask.equals("Take Photo"))
+                        cameraIntent();
+                    else if(userChoosenTask.equals("Choose from Library"))
+                        galleryIntent();
+                } else {
+                    Toast.makeText(this, "Permission required to complete the action", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == SELECT_FILE)
+                onSelectFromGalleryResult(data);
+            else if (requestCode == REQUEST_CAMERA)
+                onCaptureImageResult(data);
+        }
+    }
+    private void onSelectFromGalleryResult(Intent data) {
+
+        Bitmap bm=null;
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        if (data != null) {
+            try {
+
+                bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
+                bm.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        byte[] byteArray = bytes.toByteArray();
+        selectedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        imageHolder.setImageBitmap(bm);
+    }
+    private void onCaptureImageResult(Intent data) {
+        Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+
+        File destination = new File(Environment.getExternalStorageDirectory(),
+                System.currentTimeMillis() + ".jpg");
+
+        FileOutputStream fo;
+        try {
+            destination.createNewFile();
+            fo = new FileOutputStream(destination);
+            fo.write(bytes.toByteArray());
+            fo.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        byte[] byteArray = bytes.toByteArray();
+        selectedImage = Base64.encodeToString(byteArray, Base64.DEFAULT);
+        imageHolder.setImageBitmap(thumbnail);
+    }
     private boolean isDeviceSupportCamera() {
         if (getApplicationContext().getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_CAMERA)) {
@@ -647,61 +744,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         }
 
         return super.onOptionsItemSelected(item);
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // if the result is capturing Image
-        onTaskCompleted("inside the onactivity result");
-        if (requestCode == 100) {
-            if (resultCode == RESULT_OK) {
-                // successfully captured the image
-                // display it in image view
-                Bitmap photo = (Bitmap)data.getExtras().get("data");
-                LayoutInflater inflater_other = LayoutInflater.from(tabCallDetails.this);
-                View view_other = inflater_other.inflate(R.layout.call_other, layout_user, false);
-                ImageView imageview = (ImageView) view_other.findViewById(R.id.captured_image_other);
-                imageview.setImageBitmap(photo);
-                imageview.setVisibility(View.VISIBLE);
-            } else if (resultCode == RESULT_CANCELED) {
-                // user cancelled Image capture
-                Toast.makeText(getApplicationContext(),
-                        "User cancelled image capture", Toast.LENGTH_SHORT)
-                        .show();
-            } else {
-                // failed to capture image
-                Toast.makeText(getApplicationContext(),
-                        "Sorry! Failed to capture image", Toast.LENGTH_SHORT)
-                        .show();
-            }
-        }
-    }
-    private void previewCapturedImage() {
-        try {
-            // hide video preview
-            LayoutInflater inflater_other = LayoutInflater.from(tabCallDetails.this);
-            View view_other = inflater_other.inflate(R.layout.call_other, layout_user, false);
-            // bimatp factory
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            // downsizing image as it throws OutOfMemory Exception for larger
-            // images
-            ImageView imageview = (ImageView) view_other.findViewById(R.id.captured_image_other);
-            /*final Bitmap bitmap = BitmapFactory.decodeFile(fileUri.getPath(),
-                    options);*/
-            onTaskCompleted(""+fileUri.getPath());
-            //   imageview.setImageBitmap(bitmap);
-            imageview.setVisibility(View.VISIBLE);
-            Bitmap bitmap = null;
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(tabCallDetails.this.getContentResolver(), fileUri);
-                imageview.setImageBitmap(bitmap);
-            } catch (IOException e) {
-                onTaskCompleted(e.getMessage());
-                e.printStackTrace();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            onTaskCompleted(e.getLocalizedMessage());
-        }
     }
     public void initializeActionData(View action_view){
 
