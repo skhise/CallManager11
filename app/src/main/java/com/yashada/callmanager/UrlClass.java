@@ -29,6 +29,11 @@ public class UrlClass {
         String URL = "http://service.newpro.in/api/app/service.php";
         return URL;
     }
+    public  String getFileUrl(){
+
+        String URL = "http://service.newpro.in/api/app/";
+        return URL;
+    }
     public String NameSpace(){
         String NAMESPACE = "urn:service";
         return NAMESPACE;

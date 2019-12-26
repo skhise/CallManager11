@@ -53,6 +53,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
@@ -119,7 +128,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             call_veiw_productBrand,call_veiw_productType,
             call_view_issueDetails,call_details_customerName,
             call_details_mobileNumber,call_details_emailId,call_details_customerAddress,mTextMessage,
-            contract_number,contract_type,productName,product_details,serviceType,IssueType,IssuePriority,LocationCall;;
+            contract_number,contract_type,productName,product_details,serviceType,IssueType,IssuePriority,LocationCall;
+    String selectedContract="0";
     LinearLayout layout_user;
     Uri fileUri;
     private boolean checkPermission(String permission){
@@ -461,9 +471,10 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                         CompanyID    = sharedpreferences.getInt(CompanyId,0);
                                         UuserRole    = sharedpreferences.getInt(USERROLE,0);
                                         IsUseractive = sharedpreferences.getBoolean(IsUserActive,false);
-                                        String clickedId = sharedpreferences.getString("clickedId","0");
                                         Integer userId = logedUserID;//sharedpreferences.getInt(UserId,0);
                                         Integer callId = sharedpreferences.getInt("callId",0);
+                                        String clickedId = sharedpreferences.getString("clickedId","0");
+
                                         String Note = action_note_txt.getText().toString();
                                         if(statusId.equals(null) || statusId.equals(0)){
                                             onTaskCompleted("Please select call status");
@@ -549,7 +560,20 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                         btn_upload.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                new upLoaData().execute();
+                                UserName     = sharedpreferences.getString(USERNAME,"");
+                                logedUserID       = sharedpreferences.getInt(UserId,0);
+                                CompanyID    = sharedpreferences.getInt(CompanyId,0);
+                                UuserRole    = sharedpreferences.getInt(USERROLE,0);
+                                IsUseractive = sharedpreferences.getBoolean(IsUserActive,false);
+                                Integer userId = logedUserID;//sharedpreferences.getInt(UserId,0);
+                                Integer callId = sharedpreferences.getInt("callId",0);
+                                if(selectedImage!=null && selectedContract!="" && callId!=0 && logedUserID!=0){
+                                    new upLoaData().execute(selectedImage,CompanyID+"",selectedContract,callId+"",logedUserID+"");
+                                } else {
+                                    Toast.makeText(tabCallDetails.this, "Unable to get call details. check log", Toast.LENGTH_SHORT).show();
+                                    Log.e("call Details",selectedImage+","+CompanyID+","+selectedContract+","+callId+","+logedUserID+"");
+                                }
+
                             }
                         });
                     }catch (Exception ee){
@@ -564,7 +588,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
     };
     private void selectImage() {
-        final CharSequence[] items = { "Take Photo", "Choose from Library",
+        final CharSequence[] items = {"Choose from Library",
                 "Cancel" };
         AlertDialog.Builder builder = new AlertDialog.Builder(tabCallDetails.this);
         builder.setTitle("Add Photo!");
@@ -1147,6 +1171,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
         String url = urlClass.getUrl();
         String NameSpace = urlClass.NameSpace();
+        String exp_string="";
+        String err_string="";
         public ProgressDialog dialog =
                 new ProgressDialog(tabCallDetails.this);
         @Override
@@ -1158,32 +1184,35 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         @Override
         protected String doInBackground(String... params) {
             String result = "";
-            try {
-                String SOAP_ACTION = NameSpace+"uploadImage";
-                SoapObject request = new SoapObject(NameSpace, "uploadImage");
-                request.addProperty("invoiceImage",params[0]);
-                request.addProperty("companyId",params[1]);
-                request.addProperty("contractId",params[2]);
-                request.addProperty("callId",params[3]);
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
+            try{
+                String urlString = urlClass.getFileUrl();
+                String api = urlString+"fileUpload.php";
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost =new HttpPost(api);
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                nameValuePairs.add(new BasicNameValuePair("invoiceImage",params[0]));
+                nameValuePairs.add(new BasicNameValuePair("companyId",params[1]));
+                nameValuePairs.add(new BasicNameValuePair("contractId",params[2]));
+                nameValuePairs.add(new BasicNameValuePair("callId",params[3]));
+                nameValuePairs.add(new BasicNameValuePair("userId",params[4]));
+
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                HttpResponse response = httpClient.execute(httpPost);
+                HttpEntity resEntity = response.getEntity();
+                if (resEntity != null) {
+
+                    String responseStr = EntityUtils
+                            .toString(resEntity).trim();
+                    err_string = responseStr;
+                    exp_string = responseStr;
+
                 }
-                if (request.equals("")) {
-                    Object re = null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-            } catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
+
+            } catch (Exception e){
+                exp_string = e.getLocalizedMessage().toString();
             }
+            result =err_string;
             return  result;
         }
         protected void onCancelled() {
@@ -1201,10 +1230,12 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             dialog.dismiss();
             if(result!="" && !result.equals(null)){
                 try {
-                    if(result.equals("1")){
+                    JSONObject jsonObject = new JSONObject(result);
+                    String code = jsonObject.getString("code");
+                    if(code.equals("1")){
                         Toast.makeText(getApplicationContext(),"Upload Successfully", Toast.LENGTH_LONG).show();
                         startActivity(new Intent(tabCallDetails.this,tabCallDetails.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                    } else if(result.equals("0")){
+                    } else if(code.equals("0")){
                         Toast.makeText(getApplicationContext(),"Error in upload", Toast.LENGTH_LONG).show();
                     } else {
                         Toast.makeText(getApplicationContext(),"Server connection Failed,Error:"+result, Toast.LENGTH_LONG).show();
@@ -1457,7 +1488,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                     String ContactNo = jsonObject.getString("customerContact");
                                     String CustEmail = jsonObject.getString("CustEmail");
                                     String Address = jsonObject.getString("customer_address");
-
+                                    selectedContract = ContactNo;
                                     String contract_numberV = jsonObject.getString("contactNo");
                                     String contract_typeV = jsonObject.getString("contactType");
                                     String product_detailsV = jsonObject.getString("prodcutDetails");
