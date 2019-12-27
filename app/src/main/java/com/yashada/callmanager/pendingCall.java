@@ -201,6 +201,7 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
 
@@ -263,6 +264,7 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                 String system_call_id = jsonObject.getString("Id");
                                 String UnreadMessages = jsonObject.getString("UnreadMessages");
                                 String callLife = jsonObject.getString("callAlive");
+                                String time = jsonObject.getString("modifyAt");
                                 if(CallStatusName.equals("Pending")) {
                                     try {
                                         Contact pendingContact = new Contact();
@@ -273,9 +275,10 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                         pendingContact.setSystem_call_id(system_call_id);
                                         pendingContact.setUnreadMessages(Integer.parseInt(UnreadMessages));
                                         pendingContact.setCallAlive(callLife);
+                                        pendingContact.setActionTime(Integer.parseInt(time));
                                         contactList.add(pendingContact);
                                     } catch (Exception e) {
-                                        Log.e("displayCountryList: ",e.getLocalizedMessage());
+                                        Log.e("displayCountryList: ",e.getLocalizedMessage()+"time:"+time);
                                         onTaskCompleted(e.getLocalizedMessage());
                                     }
                                 }
@@ -331,5 +334,15 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                 onTaskCompleted("Unable to get details, try gain");
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        Intent intentN = new Intent(pendingCall.this,check_notification.class);
+        Intent intentL = new Intent(pendingCall.this,locationService.class);
+        Log.i("MAINACT", "onDestroy!");
+        stopService(intentL);
+        stopService(intentN);
+        super.onDestroy();
     }
 }

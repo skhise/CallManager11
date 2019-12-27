@@ -273,6 +273,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             super.onPreExecute();
             try{
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             }catch (Exception ee){
                 Log.e("eee"," dd"+ee.getLocalizedMessage());
@@ -366,6 +367,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             super.onPreExecute();
             try{
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             }catch (Exception ee){
                 Log.e("eee"," dd"+ee.getLocalizedMessage());
@@ -458,6 +460,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             try{
 
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             }catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -619,5 +622,14 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                 onTaskCompleted("Unable to get details, try gain");
             }
         }
+    }
+    @Override
+    protected void onDestroy() {
+        Intent intentN = new Intent(newCallDetails.this,check_notification.class);
+        Intent intentL = new Intent(newCallDetails.this,locationService.class);
+        Log.i("MAINACT", "onDestroy!");
+        stopService(intentL);
+        stopService(intentN);
+        super.onDestroy();
     }
 }

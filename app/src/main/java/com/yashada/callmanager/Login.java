@@ -101,6 +101,7 @@ public class Login extends AppCompatActivity{
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Please wait...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
         @Override
@@ -177,6 +178,7 @@ public class Login extends AppCompatActivity{
                                 editor.apply();
                                 editor.commit();
                                 startService(new Intent(Login.this,onlineService.class));
+                                startService(new Intent(Login.this,locationService.class));
                             } catch (Exception ee){
                                 Toast.makeText(getApplicationContext(),"Error in read user input"+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                             }

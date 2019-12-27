@@ -231,6 +231,7 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
 
@@ -291,6 +292,7 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
                             String CallStatusName = jsonObject.getString("CallStatusName");
                             String system_call_id = jsonObject.getString("Id");
                             String callLife = jsonObject.getString("callAlive");
+                            String time = jsonObject.getString("modifyAt");
 
                             if(CallStatusName.equals("Forward")) {
                                 try {
@@ -302,6 +304,7 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
                                     pendingContact.setService_type("");
                                     pendingContact.setSystem_call_id(system_call_id);
                                     pendingContact.setCallAlive(callLife);
+                                    pendingContact.setActionTime(Integer.parseInt(time));
                                     contactList.add(pendingContact);
                                 } catch (Exception e) {
                                     Log.e("displayCountryList: ",e.getLocalizedMessage());
@@ -380,5 +383,14 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
             }
         }
         return result;
+    }
+    @Override
+    protected void onDestroy() {
+        Intent intentN = new Intent(newCall.this,check_notification.class);
+        Intent intentL = new Intent(newCall.this,locationService.class);
+        Log.i("MAINACT", "onDestroy!");
+        stopService(intentL);
+        stopService(intentN);
+        super.onDestroy();
     }
 }

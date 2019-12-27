@@ -226,6 +226,7 @@ public class SplashScreen extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Please wait...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
         @Override
@@ -291,10 +292,13 @@ public class SplashScreen extends AppCompatActivity {
                             editor.putString(USERCNAME,CompanyName);
                             editor.putBoolean(IsCompanyActive,IsActiveCompany);
                             editor.putBoolean(IsUserActive,IsActive);
+                            editor.putString("online","1");
                             editor.apply();
                             editor.commit();
                             Intent userHome = new Intent(SplashScreen.this, userHome.class);
                             startActivity(userHome);
+                            startService(new Intent(SplashScreen.this,onlineService.class));
+                            startService(new Intent(SplashScreen.this,locationService.class));
                         } catch (Exception ee){
                             Toast.makeText(getApplicationContext(),"Error in read user input"+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                         }
@@ -311,6 +315,9 @@ public class SplashScreen extends AppCompatActivity {
                     startActivity(new Intent(SplashScreen.this,Login.class));
                 }
 
+            } else {
+                Toast.makeText(getApplicationContext(),"Login Failed, Login Manually.",Toast.LENGTH_LONG).show();
+                startActivity(new Intent(SplashScreen.this,Login.class));
             }
         }
     }
@@ -372,8 +379,7 @@ public class SplashScreen extends AppCompatActivity {
                     boolean READ_PHONE_STATE = grantResults[1] == PackageManager.PERMISSION_GRANTED;
                     boolean INTERNET = grantResults[0] == PackageManager.PERMISSION_GRANTED;
 
-                    if(READ_PHONE_STATE && INTERNET )
-                    {
+                    if(READ_PHONE_STATE && INTERNET ){
                         Intent intent = new Intent(SplashScreen.this, Login.class);
                         startActivity(intent);
                         finish();

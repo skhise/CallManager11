@@ -70,6 +70,7 @@ public class userHome extends AppCompatActivity
     Intent intentL,intentN;
     TextView cmp;
     TextView gpsStatus;
+    int timeout = 5;
     LocationManager locationManager=null;
     CheckConnectivity checkConnectivity;
     private boolean isMyServiceRunning(Class<?> serviceClass) {
@@ -88,6 +89,11 @@ public class userHome extends AppCompatActivity
         Log.i("MAINACT", "onDestroy!");
         stopService(intentL);
         stopService(intentN);
+        Intent broadcastIntent1 = new Intent(getApplicationContext(), Restarter.class);
+        sendBroadcast(broadcastIntent1);
+
+        Intent broadcastIntent = new Intent(getApplicationContext(), ServiceRestarter.class);
+        sendBroadcast(broadcastIntent);
 
         super.onDestroy();
 
@@ -585,6 +591,7 @@ public class userHome extends AppCompatActivity
             super.onPreExecute();
             try {
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             } catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -636,7 +643,6 @@ public class userHome extends AppCompatActivity
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            Log.e("result","==>"+result);
             dialog.dismiss();
             if(result!="" && !result.equals(null)){
                 try {
@@ -661,13 +667,15 @@ public class userHome extends AppCompatActivity
         String NameSpace = urlClass.NameSpace();
         public ProgressDialog dialog =
                 new ProgressDialog(userHome.this);
+
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
-
         @Override
         protected String doInBackground(Integer... params) {
 
@@ -676,11 +684,13 @@ public class userHome extends AppCompatActivity
             Integer companyId = params[1];
             String SOAP_ACTION = NameSpace+"EngineerDashBoard";
             SoapObject request = new SoapObject(NameSpace, "EngineerDashBoard");
+
             request.addProperty("userId",UserID);
             request.addProperty("companyId",companyId);
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.setOutputSoapObject(request);
             envelope.dotNet = true;
+
             HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
             try {
                 androidHttpTransport.call(SOAP_ACTION, envelope);
@@ -703,6 +713,12 @@ public class userHome extends AppCompatActivity
         protected void onCancelled() {
             super.onCancelled();
             dialog.dismiss();
+            onTaskCompleted(" Unable to connect server");
+        }
+
+        @Override
+        protected void onCancelled(String s) {
+            super.onCancelled(s);
             onTaskCompleted(" Unable to connect server");
         }
 

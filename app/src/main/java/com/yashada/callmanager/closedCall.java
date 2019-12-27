@@ -203,6 +203,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
 
@@ -264,6 +265,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                             String UnreadMessages = jsonObject.getString("UnreadMessages");
                             String system_call_id = jsonObject.getString("Id");
                             String callLife = jsonObject.getString("callAlive");
+                            String time = jsonObject.getString("modifyAt");
                             if(CallStatusName.equals("Partially Resolved")) {
                                 try {
                                     Contact pendingContact = new Contact();
@@ -274,6 +276,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                     pendingContact.setSystem_call_id(system_call_id);
                                     pendingContact.setUnreadMessages(Integer.parseInt(UnreadMessages));
                                     pendingContact.setCallAlive(callLife);
+                                    pendingContact.setActionTime(Integer.parseInt(time));
                                     contactList.add(pendingContact);
                                 } catch (Exception e) {
                                     Log.e("displayCountryList: ",e.getLocalizedMessage());

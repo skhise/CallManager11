@@ -166,6 +166,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
             emp_address = eng_address.getText().toString();
             try {
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             } catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -237,7 +238,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
                 } else{
                     onTaskCompleted("Failed to update, try again");
                 }
-            }catch (Exception e){
+            } catch (Exception e){
                 onTaskCompleted(e.getMessage());
             }
 
@@ -256,6 +257,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
             super.onPreExecute();
             try {
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             } catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -331,4 +333,13 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        Intent intentN = new Intent(userProfile.this,check_notification.class);
+        Intent intentL = new Intent(userProfile.this,locationService.class);
+        Log.i("MAINACT", "onDestroy!");
+        stopService(intentL);
+        stopService(intentN);
+        super.onDestroy();
+    }
 }

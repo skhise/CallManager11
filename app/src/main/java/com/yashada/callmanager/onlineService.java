@@ -98,7 +98,7 @@ public class onlineService extends Service {
         initializeTimerTask(UserName,UserID,CompanyID);
 
         //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 2000, 2000); //
+        timer.schedule(timerTask, 5000, 5000); //
     }
 
     public class updateOnline extends AsyncTask<String,String,String> {
@@ -144,17 +144,18 @@ public class onlineService extends Service {
         }
         @Override
         protected void onPostExecute(String setting) {
+            Log.i("IN","Online Service");
             super.onPostExecute(setting);
             if(setting!="" && setting!=null && !setting.isEmpty()){
                 try{
                     JSONObject jsonObject = new JSONObject(setting);
                     Integer code = jsonObject.getInt("code");
                     if(code == 1){
-                        Log.e("online update",""+setting);
+                       // Log.e("online update",""+setting);
                     } else if(code == 0){
-                        Log.e("online update",""+setting);
+                        //Log.e("online update",""+setting);
                     }else {
-                        Log.e("online update","error check api");
+                        //Log.e("online update","error check api");
                     }
                 } catch (Exception ee){
                     Log.e("online update:", ee.getLocalizedMessage());

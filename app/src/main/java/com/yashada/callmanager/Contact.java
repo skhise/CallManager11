@@ -16,6 +16,15 @@ public class Contact {
     String call_assigned_id = null;
     Integer UnreadMessages = 0;
     String callAlive = "0";
+    Integer actionTime=0;
+
+    public void setActionTime(Integer actionTime) {
+        this.actionTime = actionTime;
+    }
+
+    public Integer getActionTime() {
+        return actionTime;
+    }
 
     public void setUnreadMessages(Integer unreadMessages) {
         UnreadMessages = unreadMessages;

@@ -158,6 +158,7 @@ public class check_notification extends Service {
         @Override
         protected void onPostExecute(String setting) {
             super.onPostExecute(setting);
+            Log.i("IN","Notification Service");
             if(setting!="" && setting!=null && !setting.isEmpty()){
                 try{
                     JSONObject jsonObject = new JSONObject(setting);

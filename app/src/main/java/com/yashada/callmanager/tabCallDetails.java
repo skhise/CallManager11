@@ -123,7 +123,9 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     String selectedImage=null;
     private int REQUEST_CAMERA = 0, SELECT_FILE = 1;
     ImageView imageHolder;
+    LinearLayout actionLayout;
     Button btn_upload;
+    String callStatusG ="0";
     TextView call_veiw_id,call_veiw_date,call_veiw_rnumber,call_veiw_productNumber,call_time,
             call_veiw_productBrand,call_veiw_productType,
             call_view_issueDetails,call_details_customerName,
@@ -317,6 +319,12 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     View view_action = inflater_action.inflate(R.layout.call_action, layout_user, false);
                     layout_user.addView(view_action);
                     initializeActionData(view_action);
+                    if(callStatusG.equals("6")){
+                        actionLayout.setVisibility(LinearLayout.GONE);
+                    } else {
+                        actionLayout.setVisibility(LinearLayout.VISIBLE);
+                    }
+
 
                     try{
                         String callId = sharedpreferences.getString("clickedId","0");
@@ -782,6 +790,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         btn_add_description = (Button) action_view.findViewById(R.id.btn_add_problem);
         btn_attend_call = (Button) action_view.findViewById(R.id.btn_attend_call);
         btn_call_action = (Button) action_view.findViewById(R.id.btn_call_action);
+        actionLayout = (LinearLayout) action_view.findViewById(R.id.actionLayout);
         chat_message_list = (ListView) action_view.findViewById(R.id.call_action_text_list);
         pd_txt = (TextView) action_view.findViewById(R.id.pd_txt);
         View footerView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_footer_view, null, false);
@@ -865,6 +874,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Loading...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
 
@@ -969,6 +979,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             super.onPreExecute();
             try {
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             } catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -1157,12 +1168,13 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                             }
                         }
                     } else {
-                        onTaskCompleted("No Data found spinner");
+                        Log.i("No Data"," found spinner");
+                       // onTaskCompleted("No Data found spinner");
                     }
                 } catch (Exception ee){
                     onTaskCompleted(ee.getLocalizedMessage());
                 }
-            } else{
+            } else {
                 onTaskCompleted("Unable to get details, try gain");
             }
         }
@@ -1179,6 +1191,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         protected void onPreExecute() {
             super.onPreExecute();
             dialog.setMessage("Please wait...");
+            dialog.setCanceledOnTouchOutside(false);
             dialog.show();
         }
         @Override
@@ -1401,6 +1414,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             super.onPreExecute();
             try{
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             }catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -1496,6 +1510,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                     String IssueTypeV = jsonObject.getString("issueType");
                                     String IssuePriorityV = jsonObject.getString("servicePrority");
                                     String LocationCallV = jsonObject.getString("callLocation");
+                                    String callStatus = jsonObject.getString("CallStatus");
+                                    callStatusG = callStatus;
 
                                     if(contract_numberV.equals("") || contract_numberV.equals("0") || contract_numberV.equals(null)){
                                         contract_numberV="NA";
@@ -1637,6 +1653,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             super.onPreExecute();
             try{
                 dialog.setMessage("Loading...");
+                dialog.setCanceledOnTouchOutside(false);
                 dialog.show();
             }catch (Exception ee){
                 onTaskCompleted(ee.getLocalizedMessage());
@@ -1750,4 +1767,14 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        Intent intentN = new Intent(tabCallDetails.this,check_notification.class);
+        Intent intentL = new Intent(tabCallDetails.this,locationService.class);
+        Log.i("MAINACT", "onDestroy!");
+        stopService(intentL);
+        stopService(intentN);
+
+        super.onDestroy();
+    }
 }

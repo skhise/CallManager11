@@ -84,6 +84,19 @@
             android:paddingRight="25dp"
             android:orientation="horizontal">
             <TextView
+                android:id="@+id/new_action_resent"
+                android:layout_width="5pt"
+                android:layout_height="5pt"
+                android:layout_alignTop="@id/call_date_time"
+                android:layout_alignRight="@id/call_date_time"
+                android:layout_gravity="center"
+                android:textColor="#FFF"
+                android:textSize="16sp"
+                android:layout_marginRight="5dp"
+                android:visibility="visible"
+                android:textStyle="bold"
+                android:background="@drawable/green_circle"/>
+            <TextView
                 android:id="@+id/new_action_any"
                 android:layout_width="5pt"
                 android:layout_height="5pt"

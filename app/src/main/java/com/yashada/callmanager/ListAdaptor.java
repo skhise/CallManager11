@@ -96,6 +96,7 @@ public class ListAdaptor extends BaseAdapter implements Filterable{
       viewItem.callAlive = (TextView)view.findViewById(R.id.call_alive);
       viewItem.system_call_id = (TextView)view.findViewById(R.id.system_call_id);
       viewItem.UnreadMessages = (TextView)view.findViewById(R.id.new_action_any);
+      viewItem.new_action_resent = (TextView)view.findViewById(R.id.new_action_resent);
       view.setTag(viewItem);
     }
     else
@@ -108,9 +109,21 @@ public class ListAdaptor extends BaseAdapter implements Filterable{
     viewItem.callAlive.setText(" "+contactList.get(i).getCallAlive());
     viewItem.system_call_id.setText(contactList.get(i).getSystem_call_id());
     Integer new_action_any = contactList.get(i).getUnreadMessages();
+    Integer action_time = contactList.get(i).getActionTime();
     if(new_action_any>0){
       viewItem.UnreadMessages.setVisibility(View.VISIBLE);
     } else {
+      viewItem.UnreadMessages.setVisibility(View.GONE);
+    }
+    if(action_time<4){
+      viewItem.UnreadMessages.setVisibility(View.GONE);
+      viewItem.new_action_resent.setVisibility(View.VISIBLE);
+    } else
+    if (action_time>4 && action_time<6){
+      viewItem.new_action_resent.setVisibility(View.GONE);
+      viewItem.UnreadMessages.setVisibility(View.VISIBLE);
+    } else {
+      viewItem.new_action_resent.setVisibility(View.GONE);
       viewItem.UnreadMessages.setVisibility(View.GONE);
     }
     return view;
@@ -122,6 +135,7 @@ public class ListAdaptor extends BaseAdapter implements Filterable{
     TextView callAlive;
     TextView system_call_id;
     TextView UnreadMessages;
+    TextView new_action_resent;
   }
 
   public void filter(String charText) {

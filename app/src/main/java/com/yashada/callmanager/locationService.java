@@ -78,10 +78,9 @@ public class locationService extends Service  {
     public void onDestroy() {
         super.onDestroy();
         Log.i("EXIT", "ondestroy!");
-        stoptimertask();
         Intent broadcastIntent = new Intent(getApplicationContext(), ServiceRestarter.class);
         sendBroadcast(broadcastIntent);
-
+        stoptimertask();
 
     }
     @Override
@@ -174,7 +173,7 @@ public class locationService extends Service  {
         initializeTimerTask(userName,userId,companyId);
 
         //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 2000, 2000); //
+        timer.schedule(timerTask, 5000, 5000); //
     }
     public void stoptimertask() {
         //stop the timer, if it's not already null
@@ -240,6 +239,7 @@ public class locationService extends Service  {
         protected void onPostExecute(String setting) {
             super.onPostExecute(setting);
             //Toast.makeText(ge, "Location:"+setting, Toast.LENGTH_SHORT).show();
+            Log.i("IN","Location Service");
             if(setting!="" && setting!=null && !setting.isEmpty()){
                 try{
                     JSONObject jsonObject = new JSONObject(setting);
