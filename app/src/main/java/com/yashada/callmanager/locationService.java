@@ -158,7 +158,6 @@ public class locationService extends Service  {
 
         timerTask = new TimerTask() {
             public void run() {
-                Log.i("in timer", "in timer ++++  "+ (counter++));
                 String locc = latitude+","+longitude;
                 new updateLocation().execute(userName,userId,companyId,locc);
             }
@@ -241,7 +240,6 @@ public class locationService extends Service  {
         protected void onPostExecute(String setting) {
             super.onPostExecute(setting);
             //Toast.makeText(ge, "Location:"+setting, Toast.LENGTH_SHORT).show();
-            Log.e("Location out",setting+""+latitude+","+longitude);
             if(setting!="" && setting!=null && !setting.isEmpty()){
                 try{
                     JSONObject jsonObject = new JSONObject(setting);

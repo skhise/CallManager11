@@ -43,7 +43,7 @@ public class check_notification extends Service {
     UrlClass urlClass;
 
     public check_notification(){
-        Log.i("HERE", "here I am!");
+
     }
 
     @Override
@@ -84,7 +84,6 @@ public class check_notification extends Service {
     public void initializeTimerTask(final String UserName,final String  UserID,final String  CompanyID) {
         timerTask = new TimerTask() {
             public void run() {
-                Log.i("in timer", "in timer ++++  "+ (counter++));
                 new check_for_notification().execute(UserName,UserID,CompanyID);
             }
         };
@@ -181,8 +180,6 @@ public class check_notification extends Service {
             } else {
                 Log.e("Location Update Esle",setting+"");
             }
-
-            Log.e("Notification","Check");
         }
     }
     public static boolean isAppRunning(final Context context, final String packageName) {

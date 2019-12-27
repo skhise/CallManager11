@@ -163,7 +163,6 @@ public class onlineService extends Service {
                 Log.e("online Update Esle",setting+"");
             }
 
-            Log.e("online","Check");
         }
     }
     public static boolean isAppRunning(final Context context, final String packageName) {
