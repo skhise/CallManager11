@@ -1,10 +1,12 @@
 package com.yashada.callmanager;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothClass;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -41,6 +43,7 @@ public class Login extends AppCompatActivity{
     public static final String PREFS_NAME = "user_details";
     public String UserId="userId";
     public String CompanyId="companyId";
+    public String deviceId="";
 
 
     SharedPreferences sharedpreferences;
@@ -62,14 +65,19 @@ public class Login extends AppCompatActivity{
 
                 String email = Login_Email.getText().toString();
                 String password = Login_Password.getText().toString();
+                deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(),
+                        Settings.Secure.ANDROID_ID);
+                Log.e("deviceId-->",deviceId);
                 if(email.equals("")){
                     Login_Email.setError("Required");
                 } else if(password.equals("")){
                     Login_Password.setError("Required");
                 } else if(!email.equals("") && !Patterns.EMAIL_ADDRESS.matcher(email).matches()){
                     Login_Email.setError("Required valid email ");
+                } else if(deviceId.equals("") || deviceId.equals(null)){
+                    Toast.makeText(Login.this, "Unable to get device Id", Toast.LENGTH_SHORT).show();
                 } else {
-                    checkLogin(email,password);
+                    checkLogin(email,password,deviceId);
                 }
 
             }
@@ -78,10 +86,10 @@ public class Login extends AppCompatActivity{
     }
 
 
-    public void checkLogin(String email, String password){
+    public void checkLogin(String email, String password,String deviceId){
         boolean checkInternet = urlClass.checkInternet();
         if(checkInternet){
-            new check_login().execute(email,password);
+            new check_login().execute(email,password,deviceId);
         } else {
             Toast.makeText(Login.this,"Internet connection failed, please check",Toast.LENGTH_LONG).show();
         }
@@ -113,6 +121,7 @@ public class Login extends AppCompatActivity{
             SoapObject request = new SoapObject(NameSpace, METHOD_NAME);
             request.addProperty("UserName",UserName);
             request.addProperty("Password",UserPassword);
+            request.addProperty("deviceId",params[2]);
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.setOutputSoapObject(request);
             envelope.dotNet = true;
@@ -185,6 +194,8 @@ public class Login extends AppCompatActivity{
                         } else {
                             Toast.makeText(getApplicationContext(),"Invalid user details, please check login details",Toast.LENGTH_LONG).show();
                         }
+                    } else if(code == 3){
+                        Toast.makeText(getApplicationContext(),"User active on other device",Toast.LENGTH_LONG).show();
                     } else {
                         Toast.makeText(getApplicationContext(),"Invalid user details, please check login details",Toast.LENGTH_LONG).show();
                     }

@@ -55,6 +55,7 @@ public class SplashScreen extends AppCompatActivity {
     UrlClass urlClass;
     Boolean checkInternet;
     private static final boolean AUTO_HIDE = true;
+    public String deviceId="";
 
     /**
      * If {@link #AUTO_HIDE} is set, the number of milliseconds to wait after
@@ -168,12 +169,41 @@ public class SplashScreen extends AppCompatActivity {
         String loginPassword = sharedpreferences.getString(PASSWORD,"");
         Integer loginUserId = sharedpreferences.getInt(UserId,0);
         Integer company_id = sharedpreferences.getInt(CompanyId,0);
-
+        deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+        Log.e("deviceId-->",deviceId);
         if(loginName!="" && loginPassword!="" && loginUserId!=0 && company_id !=0){
             try{
                 checkInternet = urlClass.checkInternet();
                 if(checkInternet){
-                    new check_login().execute(loginName,loginPassword);
+                    if(deviceId!="" && deviceId!=null){
+                        new check_login().execute(loginName,loginPassword,deviceId);
+                    } else {
+
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle("Device Id");
+                        builder.setMessage("Unable to get device Id");
+                        builder.setCancelable(true);
+                        builder.setPositiveButton("Close App", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                                builder.create().dismiss();
+
+                            }
+                        });
+                        builder.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startApp();
+                                builder.create().dismiss();
+                            }
+                        });
+                        builder.show();
+
+
+                    }
+
 
                 } else{
                     final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -238,6 +268,7 @@ public class SplashScreen extends AppCompatActivity {
             SoapObject request = new SoapObject(NameSpace, METHOD_NAME);
             request.addProperty("UserName",UserName);
             request.addProperty("Password",UserPassword);
+            request.addProperty("deviceId",params[2]);
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.setOutputSoapObject(request);
             envelope.dotNet = true;
@@ -275,12 +306,13 @@ public class SplashScreen extends AppCompatActivity {
                     Integer Companyid = jsonObject.getInt("CompanyId");
                     String UserName = jsonObject.getString("UserName");
                     Integer Role = jsonObject.getInt("Role");
+                    Integer code = jsonObject.getInt("code");
                     //  String RoleName = jsonObject.getString("RoleName");
                     String RoleName="User";
                     Boolean IsActive = jsonObject.getBoolean("IsActive");
                     Boolean IsActiveCompany = jsonObject.getBoolean("IsActiveCompany");
                     String CompanyName = jsonObject.getString("CompanyName");
-                    if(!UserID.equals("") && IsActive.equals(true) && !Companyid.equals("") && IsActiveCompany.equals(true) &&(Role.equals("5") || RoleName.equals("User")) ){
+                    if(code==1 && !UserID.equals("") && IsActive.equals(true) && !Companyid.equals("") && IsActiveCompany.equals(true) &&(Role.equals("5") || RoleName.equals("User")) ){
                         try {
                             SharedPreferences.Editor editor = sharedpreferences.edit();
                             editor.putString(USERNAME,UserName);
@@ -302,6 +334,30 @@ public class SplashScreen extends AppCompatActivity {
                         } catch (Exception ee){
                             Toast.makeText(getApplicationContext(),"Error in read user input"+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                         }
+                    } else if(code == 3){
+
+                        final AlertDialog.Builder builder = new AlertDialog.Builder(SplashScreen.this);
+                        builder.setTitle("User active");
+                        builder.setMessage("User active on other device");
+                        builder.setCancelable(true);
+                        builder.setPositiveButton("Close App", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                                builder.create().dismiss();
+
+                            }
+                        });
+                        builder.setNegativeButton("Try Again", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivity(new Intent(SplashScreen.this,Login.class));
+                                builder.create().dismiss();
+                            }
+                        });
+                        builder.show();
+
+
                     } else {
                         Toast.makeText(getApplicationContext(),"Invalid user details, please check login details",Toast.LENGTH_LONG).show();
                         finish();
