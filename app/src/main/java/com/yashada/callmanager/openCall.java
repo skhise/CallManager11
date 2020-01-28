@@ -165,7 +165,7 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
     @Override
     public void onTaskCompleted(String response) {
 
-        Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+//        Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -232,7 +232,7 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
                 return  result;
             } catch (Exception e) {
                 System.out.println("Error"+e);
-                onTaskCompleted(e.getLocalizedMessage());
+               // onTaskCompleted(e.getLocalizedMessage());
             }
             return result;
 

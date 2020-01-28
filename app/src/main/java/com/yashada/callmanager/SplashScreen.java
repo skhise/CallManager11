@@ -276,6 +276,7 @@ public class SplashScreen extends AppCompatActivity {
             try {
                 androidHttpTransport.call(SOAP_ACTION, envelope);
                 result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
+
                 if(request.equals("")){
                     Object re= null;
                     result = envelope.getResponse().toString();
@@ -286,6 +287,13 @@ public class SplashScreen extends AppCompatActivity {
             }
             return result;
         }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            Log.i("on progress",values.toString());
+        }
+
         protected void onCancelled() {
             dialog.dismiss();
             Toast toast = Toast.makeText(SplashScreen.this,
@@ -293,6 +301,7 @@ public class SplashScreen extends AppCompatActivity {
             toast.setGravity(Gravity.TOP, 25, 400);
             toast.show();
             /*show_local_db();*/
+            startActivity(new Intent(SplashScreen.this,Login.class));
         }
         @Override
         protected void onPostExecute(String result) {
@@ -332,7 +341,9 @@ public class SplashScreen extends AppCompatActivity {
                             startService(new Intent(SplashScreen.this,onlineService.class));
                             startService(new Intent(SplashScreen.this,locationService.class));
                         } catch (Exception ee){
+                            Log.e("Ex:",ee.getLocalizedMessage());
                             Toast.makeText(getApplicationContext(),"Error in read user input"+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                            startActivity(new Intent(SplashScreen.this,Login.class));
                         }
                     } else if(code == 3){
 
@@ -499,7 +510,7 @@ public class SplashScreen extends AppCompatActivity {
 
     @SuppressLint("InlinedApi")
     private void show() {
-        // Show the system bar
+        // Show the system bardeviceId
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         mVisible = true;

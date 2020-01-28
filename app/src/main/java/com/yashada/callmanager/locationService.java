@@ -113,6 +113,7 @@ public class locationService extends Service  {
         checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
 
         if(provider.equals("")){
+            //Toast.makeText(this, "Check Provider Setting", Toast.LENGTH_SHORT).show();
             Log.e("Unable to get provider", "check setting");
         } else {
             locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, new LocationListener() {
@@ -120,17 +121,14 @@ public class locationService extends Service  {
                 public void onLocationChanged(Location location) {
 
                 }
-
                 @Override
                 public void onStatusChanged(String provider, int status, Bundle extras) {
 
                 }
-
                 @Override
                 public void onProviderEnabled(String provider) {
 
                 }
-
                 @Override
                 public void onProviderDisabled(String provider) {
 
@@ -146,12 +144,14 @@ public class locationService extends Service  {
                     longitude = loc.getLongitude();
                     location = latitude+","+longitude;
                 } else {
+                  //  Toast.makeText(this, "Check Location Setting", Toast.LENGTH_SHORT).show();
                     Log.e("Unable to get", "Location");
                 }
 
 
             } else {
                 Log.e("Unable to get", "Location");
+                //Toast.makeText(this, "Check Location Setting", Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -240,10 +240,12 @@ public class locationService extends Service  {
             super.onPostExecute(setting);
             //Toast.makeText(ge, "Location:"+setting, Toast.LENGTH_SHORT).show();
             Log.i("IN","Location Service");
+            Log.i("IN",setting);
             if(setting!="" && setting!=null && !setting.isEmpty()){
                 try{
                     JSONObject jsonObject = new JSONObject(setting);
                     Integer code = jsonObject.getInt("code");
+                    //Toast.makeText(getApplicationContext(), "Location updated, code:"+code, Toast.LENGTH_SHORT).show();
                 }catch (Exception ee){
                     Log.e("location update:", ee.getLocalizedMessage());
                 }

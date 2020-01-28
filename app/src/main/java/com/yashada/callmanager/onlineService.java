@@ -132,7 +132,7 @@ public class onlineService extends Service {
 
                 result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
                 if(request.equals("")){
-                    Object re= null;
+                    Object re= null;    
                     re = envelope.getResponse();
                     return re.toString();
                 }

@@ -206,6 +206,8 @@ public class Login extends AppCompatActivity{
                     Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                 }
 
+            } else {
+                Toast.makeText(getApplicationContext(),"Invalid user details, please check login details",Toast.LENGTH_LONG).show();
             }
         }
     }
