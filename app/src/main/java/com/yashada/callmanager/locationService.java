@@ -1,25 +1,19 @@
 package com.yashada.callmanager;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Service;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
@@ -27,6 +21,8 @@ import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.util.List;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -44,9 +40,9 @@ public class locationService extends Service  {
     String location = "";
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
 
-
+    public LocationManager locationManager;
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
-    protected LocationManager locationManager;
+    String provider = "";
 
     public locationService(){
 
@@ -93,9 +89,52 @@ public class locationService extends Service  {
         sendBroadcast(broadcastIntent);
         super.onTaskRemoved(rootIntent);
     }
-    public void initializeTimerTask(final String userName,final String userId,final String companyId) {
 
-        LocationManager locationManager = (LocationManager) getBaseContext()
+    public void initializeTimerTaskNew(final String userName, final String userId, final String companyId) {
+
+        MyLocation myLocation = new MyLocation();
+        MyLocation.LocationResult locationResult = new MyLocation.LocationResult() {
+
+            @Override
+            public void gotLocation(Location location) {
+                // TODO Auto-generated method stub
+                double Longitude = location.getLongitude();
+                double Latitude = location.getLatitude();
+                latitude = Latitude;
+                longitude = Longitude;
+                try {
+                    SharedPreferences locationpref = getApplication()
+                            .getSharedPreferences("user_details", MODE_WORLD_READABLE);
+                    SharedPreferences.Editor prefsEditor = locationpref.edit();
+                    prefsEditor.putString("Longitude", Longitude + "");
+                    prefsEditor.putString("Latitude", Latitude + "");
+                    prefsEditor.commit();
+
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        };
+        myLocation.getLocation(getApplicationContext(), locationResult);
+
+        boolean r = myLocation.getLocation(getApplicationContext(),
+                locationResult);
+
+        timerTask = new TimerTask() {
+            public void run() {
+
+                String locc = latitude + "," + longitude;
+                Log.e("locc", locc);
+                String address = getCompleteAddressString(latitude, longitude);
+                new updateLocation().execute(userName, userId, companyId, locc, address);
+            }
+        };
+    }
+
+    public void initializeTimerTaskOld(final String userName, final String userId, final String companyId) {
+
+        locationManager = (LocationManager) getBaseContext()
                 .getSystemService(LOCATION_SERVICE);
         checkGPS = locationManager
                 .isProviderEnabled(LocationManager.GPS_PROVIDER);
@@ -103,11 +142,13 @@ public class locationService extends Service  {
         // get network provider status
         checkNetwork = locationManager
                 .isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        String provider="";
+
         if(checkGPS){
             provider = LocationManager.GPS_PROVIDER;
         } else if(checkNetwork){
             provider = LocationManager.NETWORK_PROVIDER;
+        } else {
+            provider = "";
         }
         checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
         checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -119,7 +160,7 @@ public class locationService extends Service  {
             locationManager.requestLocationUpdates(provider, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, new LocationListener() {
                 @Override
                 public void onLocationChanged(Location location) {
-
+                    loc = location;
                 }
                 @Override
                 public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -135,30 +176,33 @@ public class locationService extends Service  {
                 }
             });
 
-            if(locationManager!=null){
 
-                loc = locationManager
-                        .getLastKnownLocation(provider);
-                if(loc!=null){
-                    latitude = loc.getLatitude();
-                    longitude = loc.getLongitude();
-                    location = latitude+","+longitude;
-                } else {
-                  //  Toast.makeText(this, "Check Location Setting", Toast.LENGTH_SHORT).show();
-                    Log.e("Unable to get", "Location");
-                }
-
-
-            } else {
-                Log.e("Unable to get", "Location");
-                //Toast.makeText(this, "Check Location Setting", Toast.LENGTH_SHORT).show();
-            }
         }
 
         timerTask = new TimerTask() {
             public void run() {
+                if (locationManager != null) {
+                    checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+                    checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+
+                    loc = locationManager
+                            .getLastKnownLocation(provider);
+                    if (loc != null) {
+                        latitude = loc.getLatitude();
+                        longitude = loc.getLongitude();
+                        location = latitude + "," + longitude;
+                    } else {
+                        //  Toast.makeText(this, "Check Location Setting", Toast.LENGTH_SHORT).show();
+                        Log.e("Unable to get", "Location");
+                    }
+                } else {
+                    Log.e("Unable to get", "Location");
+                    //Toast.makeText(this, "Check Location Setting", Toast.LENGTH_SHORT).show();
+                }
                 String locc = latitude+","+longitude;
-                new updateLocation().execute(userName,userId,companyId,locc);
+                Log.e("locc", locc);
+                String address = getCompleteAddressString(latitude, longitude);
+                new updateLocation().execute(userName, userId, companyId, locc, address);
             }
         };
     }
@@ -170,7 +214,7 @@ public class locationService extends Service  {
         timer = new Timer();
 
         //initialize the TimerTask's job
-        initializeTimerTask(userName,userId,companyId);
+        initializeTimerTaskNew(userName, userId, companyId);
 
         //schedule the timer, to wake up every 1 second
         timer.schedule(timerTask, 5000, 5000); //
@@ -196,6 +240,30 @@ public class locationService extends Service  {
         }
         return latitude;
     }
+
+    private String getCompleteAddressString(double LATITUDE, double LONGITUDE) {
+        String strAdd = "";
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(LATITUDE, LONGITUDE, 1);
+            if (addresses != null) {
+                Address returnedAddress = addresses.get(0);
+                StringBuilder strReturnedAddress = new StringBuilder();
+
+                for (int i = 0; i <= returnedAddress.getMaxAddressLineIndex(); i++) {
+                    strReturnedAddress.append(returnedAddress.getAddressLine(i)).append("\n");
+                }
+                strAdd = strReturnedAddress.toString();
+                Log.w("My Current loction address", strReturnedAddress.toString());
+            } else {
+                Log.w("My Current loction address", "No Address returned!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.w("My Current loction address", "Canont get Address!");
+        }
+        return strAdd;
+    }
     public class updateLocation extends AsyncTask<String,String,String>{
 
         String url = urlClass.getUrl();
@@ -208,6 +276,7 @@ public class locationService extends Service  {
 
             String userId = doubles[1];
             String location = doubles[3];
+            String address = doubles[4];
 
             String result = "";
 
@@ -215,6 +284,7 @@ public class locationService extends Service  {
             SoapObject request = new SoapObject(NameSpace, "updateEnginnerLocation");
             request.addProperty("userId",userId);
             request.addProperty("location",location);
+            request.addProperty("address", address);
             SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
             envelope.setOutputSoapObject(request);
             envelope.dotNet = true;
