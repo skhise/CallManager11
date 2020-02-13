@@ -15,12 +15,22 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
@@ -217,7 +227,7 @@ public class locationService extends Service  {
         initializeTimerTaskNew(userName, userId, companyId);
 
         //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 10000, 10000); //
+        timer.schedule(timerTask, 5000, 5000); //
     }
     public void stoptimertask() {
         //stop the timer, if it's not already null
@@ -264,7 +274,83 @@ public class locationService extends Service  {
         }
         return strAdd;
     }
-    public class updateLocation extends AsyncTask<String,String,String>{
+
+    public class updateLocation extends AsyncTask<String, String, String> {
+
+        String url = urlClass.getUrl();
+        String NameSpace = urlClass.NameSpace();
+        String exp_string = "";
+        String err_string = "";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String result = "";
+            try {
+                String userId = params[1];
+                String location = params[3];
+                String address = params[4];
+                String urlString = urlClass.getFileUrl();
+                String api = urlString + "updateLocation.php";
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(api);
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                nameValuePairs.add(new BasicNameValuePair("userId", userId));
+                nameValuePairs.add(new BasicNameValuePair("companyId", params[2]));
+                nameValuePairs.add(new BasicNameValuePair("location", location));
+                nameValuePairs.add(new BasicNameValuePair("address", address));
+
+
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                HttpResponse response = httpClient.execute(httpPost);
+                HttpEntity resEntity = response.getEntity();
+                if (resEntity != null) {
+
+                    String responseStr = EntityUtils
+                            .toString(resEntity).trim();
+                    err_string = responseStr;
+                    exp_string = responseStr;
+
+                }
+
+            } catch (Exception e) {
+                exp_string = e.getLocalizedMessage();
+            }
+            result = err_string;
+            return result;
+        }
+
+        protected void onCancelled() {
+            /*show_local_db();*/
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            Log.e("err_string", "==>" + result);
+            Log.i("IN", "Location Service");
+            Log.i("IN", result);
+            if (result != "" && result != null && !result.isEmpty()) {
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    Integer code = jsonObject.getInt("code");
+                    //Toast.makeText(getApplicationContext(), "Location updated, code:"+code, Toast.LENGTH_SHORT).show();
+                } catch (Exception ee) {
+                    Log.e("location update:", ee.getLocalizedMessage());
+                }
+
+            } else {
+                Log.e("Location Update Esle", result + "" + latitude + "," + longitude);
+            }
+        }
+    }
+
+    public class updateLocation1 extends AsyncTask<String, String, String> {
 
         String url = urlClass.getUrl();
         String NameSpace = urlClass.NameSpace();

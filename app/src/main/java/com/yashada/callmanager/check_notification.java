@@ -14,12 +14,22 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -101,7 +111,86 @@ public class check_notification extends Service {
         timer.schedule(timerTask, 5000, 5000); //
     }
 
-    public class check_for_notification extends AsyncTask<String,String,String>{
+    public class check_for_notification extends AsyncTask<String, String, String> {
+
+        String url = urlClass.getUrl();
+        String NameSpace = urlClass.NameSpace();
+        String exp_string = "";
+        String err_string = "";
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String result = "";
+            try {
+                String userId = params[1];
+                String companyId = params[2];
+                String urlString = urlClass.getFileUrl();
+                String api = urlString + "check_notification.php";
+                HttpClient httpClient = new DefaultHttpClient();
+                HttpPost httpPost = new HttpPost(api);
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                nameValuePairs.add(new BasicNameValuePair("userId", userId));
+                nameValuePairs.add(new BasicNameValuePair("companyId", companyId));
+
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                HttpResponse response = httpClient.execute(httpPost);
+                HttpEntity resEntity = response.getEntity();
+                if (resEntity != null) {
+
+                    String responseStr = EntityUtils
+                            .toString(resEntity).trim();
+                    err_string = responseStr;
+                    exp_string = responseStr;
+
+                }
+
+            } catch (Exception e) {
+                exp_string = e.getLocalizedMessage();
+            }
+            result = err_string;
+            return result;
+        }
+
+        protected void onCancelled() {
+            /*show_local_db();*/
+        }
+
+        @Override
+        protected void onPostExecute(String setting) {
+            super.onPostExecute(setting);
+            Log.i("IN", "Notification Service");
+            if (setting != "" && setting != null && !setting.isEmpty()) {
+                try {
+                    JSONObject jsonObject = new JSONObject(setting);
+                    Integer code = jsonObject.getInt("code");
+                    if (code == 1) {
+                        Integer callCount = jsonObject.getInt("callCount");
+                        if (callCount > 0) {
+                            sendNotification(callCount);
+                        }
+
+                    } else if (code == 0) {
+                        Log.e("notification update", "" + setting);
+                    } else {
+                        Log.e("notification update", "error check api");
+                    }
+                } catch (Exception ee) {
+                    Log.e("notification update:", ee.getLocalizedMessage());
+                }
+
+            } else {
+                Log.e("Location Update Esle", setting + "");
+            }
+        }
+    }
+
+    public class check_for_notification1 extends AsyncTask<String, String, String> {
         String url = urlClass.getUrl();
         String NameSpace = urlClass.NameSpace();
 

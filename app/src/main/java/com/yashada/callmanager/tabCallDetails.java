@@ -415,6 +415,12 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     LayoutInflater inflater_other = LayoutInflater.from(tabCallDetails.this);
                     View view_other = inflater_other.inflate(R.layout.call_other, layout_user, false);
                     layout_user.addView(view_other);
+                    LinearLayout image_other_view = (LinearLayout) view_other.findViewById(R.id.image_other_view);
+                    if (callStatusG.equals("6")) {
+                        image_other_view.setVisibility(LinearLayout.GONE);
+                    } else {
+                        image_other_view.setVisibility(LinearLayout.VISIBLE);
+                    }
 
                     try{
                         Button b = (Button)view_other.findViewById(R.id.btn_camera_open);
