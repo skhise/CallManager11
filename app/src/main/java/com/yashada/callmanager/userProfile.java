@@ -5,9 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Gravity;
@@ -179,6 +179,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
             String result = "";
             try {
                 String userId = params[0];
+                String companyId = params[1];
                 Calendar c = Calendar.getInstance();
 
                 SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -192,7 +193,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
                 request.addProperty("Address",emp_address);
                 request.addProperty("ContactNo",emp_contact);
                 request.addProperty("EmailId",emp_email);
-
+                request.addProperty("companyId", companyId);
                 request.addProperty("CurrentDateTime",formattedDate);
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
                 envelope.setOutputSoapObject(request);
@@ -319,6 +320,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
                     String email = jsonObject.getString("EmailId");
                     String phoneNo = jsonObject.getString("PhoneNo");
                     String Location = jsonObject.getString("Location");
+
                     eng_email.setText(email);
                     nameENG.setText(name);
                     emailENG.setText(email);

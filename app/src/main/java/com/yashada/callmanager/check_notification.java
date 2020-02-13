@@ -1,8 +1,6 @@
 package com.yashada.callmanager;
 
 import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,22 +8,11 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.media.AudioAttributes;
-import android.media.AudioManager;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import android.view.View;
-import android.widget.Toast;
-
-import com.google.android.gms.games.internal.constants.NotificationChannel;
 
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
@@ -111,7 +98,7 @@ public class check_notification extends Service {
         initializeTimerTask(UserName,UserID,CompanyID);
 
         //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 2000, 2000); //
+        timer.schedule(timerTask, 5000, 5000); //
     }
 
     public class check_for_notification extends AsyncTask<String,String,String>{

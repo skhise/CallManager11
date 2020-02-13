@@ -1,6 +1,5 @@
 package com.yashada.callmanager;
 
-import android.*;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -11,16 +10,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.MailTo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
@@ -29,9 +25,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.text.Layout;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
@@ -48,7 +42,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -134,140 +127,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     String selectedContract="0";
     LinearLayout layout_user;
     Uri fileUri;
-    private boolean checkPermission(String permission){
-        if (Build.VERSION.SDK_INT >= 23) {
-            int result = ContextCompat.checkSelfPermission(this, permission);
-            if (result == PackageManager.PERMISSION_GRANTED){
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return true;
-        }
-    }
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tab_open_call);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-
-        urlClass = new UrlClass(tabCallDetails.this);
-        checkInternet = urlClass.checkInternet();
-        try{
-            msg_List = new ArrayList<ChatMessage>();
-
-            sharedpreferences   = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            Intent acName = getIntent();
-            String activity_name = acName.getStringExtra("activity_name");
-            getSupportActionBar().setTitle(activity_name);
-            layout_user = (LinearLayout) findViewById(R.id.user_layout);
-            layout_user.removeAllViews();
-            LayoutInflater inflater_default = LayoutInflater.from(tabCallDetails.this);
-            View view_default = inflater_default.inflate(R.layout.call_info, layout_user, false);
-            layout_user.addView(view_default);
-            initializeInfoData(view_default);
-            UserName     = sharedpreferences.getString(USERNAME,"");
-            logedUserID       = sharedpreferences.getInt(UserId,0);
-            CompanyID    = sharedpreferences.getInt(CompanyId,0);
-            UuserRole    = sharedpreferences.getInt(USERROLE,0);
-            IsUseractive = sharedpreferences.getBoolean(IsUserActive,false);
-            String clickedId = sharedpreferences.getString("clickedId","0");
-            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
-            StrictMode.setVmPolicy(builder.build());
-            if((clickedId!=null || clickedId!="0") && (CompanyID!=null || CompanyID!=0)){
-                try{
-
-                    Integer cId = Integer.parseInt(clickedId);
-                    Log.e("clickedId->",cId+"");
-                    if(checkInternet){
-                        new getCallDetails().execute(logedUserID,cId,CompanyID);
-                        userLocation =  share_user_location();
-                    }else{
-                        onTaskCompleted("Internet connection failed, please check");
-                    }
-                }catch (Exception ee){
-                    Log.e("eeee",ee.getLocalizedMessage());
-                    onTaskCompleted(ee.getLocalizedMessage());
-                }
-            } else {
-                Toast.makeText(tabCallDetails.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
-            }
-
-        }catch (Exception ee){
-            Toast.makeText(tabCallDetails.this,"Unable to get user details, "+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
-        }
-
-        // mTextMessage = (TextView) findViewById(R.id.message);
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-
-    }
-    @Override
-    public boolean onSupportNavigateUp() {
-        onBackPressed();
-        return true;
-    }
-
-    @Override
-    public void onTaskCompleted(String response) {
-        Toast.makeText(this,"Call Responce: "+response,Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        finish();
-        SharedPreferences.Editor editor =sharedpreferences.edit();
-        editor.putInt("ActivityCode",1);
-        Integer ActivityCde = sharedpreferences.getInt("ActivityCode",0);
-        if(ActivityCde==1){
-            startActivity(new Intent(tabCallDetails.this,newCall.class));
-            finish();
-        }
-        if(ActivityCde==2){
-            startActivity(new Intent(tabCallDetails.this,openCall.class));
-            finish();
-        }
-        if(ActivityCde==3){
-            startActivity(new Intent(tabCallDetails.this,pendingCall.class));
-            finish();
-        }
-        if(ActivityCde==4){
-            startActivity(new Intent(tabCallDetails.this,closedCall.class));
-            finish();
-        }
-
-    }
-    public void initializeInfoData(View initializeData){
-        try{
-            call_veiw_id = (TextView) initializeData.findViewById(R.id.call_veiw_id);
-            call_veiw_date = (TextView)  initializeData.findViewById(R.id.call_veiw_date);
-           // call_veiw_rnumber = (TextView)  initializeData.findViewById(R.id.call_veiw_rnumber);
-            call_veiw_productNumber = (TextView)  initializeData.findViewById(R.id.call_veiw_productNumber);
-            call_veiw_productType = (TextView)  initializeData.findViewById(R.id.call_veiw_productType);
-            call_view_issueDetails = (TextView)  initializeData.findViewById(R.id.call_view_issueDetails);
-            call_details_customerName = (TextView)  initializeData.findViewById(R.id.call_details_customerName);
-            call_details_mobileNumber = (TextView)  initializeData.findViewById(R.id.call_details_mobileNumber);
-            call_details_emailId = (TextView)  initializeData.findViewById(R.id.call_details_emailId);
-            call_details_customerAddress = (TextView)  initializeData.findViewById(R.id.call_details_customerAddress);
-           // call_time = (TextView)  initializeData.findViewById(R.id.call_time);
-            serviceType = (TextView) findViewById(R.id.serviceType);
-            IssueType = (TextView) findViewById(R.id.IssueType);
-            IssuePriority = (TextView) findViewById(R.id.IssuePriority);
-            LocationCall = (TextView) findViewById(R.id.LocationCall);
-            productName = (TextView) findViewById(R.id.call_veiw_productName);
-            contract_number = (TextView) findViewById(R.id.contract_number);
-            contract_type = (TextView) findViewById(R.id.contract_type);
-            product_details = (TextView) findViewById(R.id.product_details);
-
-        } catch (Exception ee){
-            onTaskCompleted(ee.getMessage());
-        }
-    }
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -329,13 +188,14 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     try{
                         String callId = sharedpreferences.getString("clickedId","0");
                         CompanyID    = sharedpreferences.getInt(CompanyId,0);
-                        if(!callId.equals(0) && CompanyID!=0){
+                        if (!callId.equals(0) && CompanyID != 0 && CompanyID.toString() != "o0") {
                             try {
                                 checkInternet = urlClass.checkInternet();
                                 if(checkInternet){
                                     //new update_read_status().execute(callId,CompanyID);
+                                    Log.e("CompanyID", CompanyID + "");
                                     new get_user_chat_list().execute(callId,CompanyID+"");
-                                    new getProblemDescription().execute(callId);
+                                    new getProblemDescription().execute(callId, CompanyID.toString());
                                 }else{
                                     onTaskCompleted("Internet connection failed, please check");
                                 }
@@ -595,6 +455,141 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         }
 
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_tab_open_call);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+        urlClass = new UrlClass(tabCallDetails.this);
+        checkInternet = urlClass.checkInternet();
+        try {
+            msg_List = new ArrayList<ChatMessage>();
+
+            sharedpreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            Intent acName = getIntent();
+            String activity_name = acName.getStringExtra("activity_name");
+            getSupportActionBar().setTitle(activity_name);
+            layout_user = (LinearLayout) findViewById(R.id.user_layout);
+            layout_user.removeAllViews();
+            LayoutInflater inflater_default = LayoutInflater.from(tabCallDetails.this);
+            View view_default = inflater_default.inflate(R.layout.call_info, layout_user, false);
+            layout_user.addView(view_default);
+            initializeInfoData(view_default);
+            UserName = sharedpreferences.getString(USERNAME, "");
+            logedUserID = sharedpreferences.getInt(UserId, 0);
+            CompanyID = sharedpreferences.getInt(CompanyId, 0);
+            UuserRole = sharedpreferences.getInt(USERROLE, 0);
+            IsUseractive = sharedpreferences.getBoolean(IsUserActive, false);
+            String clickedId = sharedpreferences.getString("clickedId", "0");
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
+            if ((clickedId != null || clickedId != "0") && (CompanyID != null || CompanyID != 0)) {
+                try {
+
+                    Integer cId = Integer.parseInt(clickedId);
+                    Log.e("clickedId->", cId + "");
+                    if (checkInternet) {
+                        new getCallDetails().execute(logedUserID, cId, CompanyID);
+                        userLocation = share_user_location();
+                    } else {
+                        onTaskCompleted("Internet connection failed, please check");
+                    }
+                } catch (Exception ee) {
+                    Log.e("eeee", ee.getLocalizedMessage());
+                    onTaskCompleted(ee.getLocalizedMessage());
+                }
+            } else {
+                Toast.makeText(tabCallDetails.this, "Unable to get user details, ", Toast.LENGTH_LONG).show();
+            }
+
+        } catch (Exception ee) {
+            Toast.makeText(tabCallDetails.this, "Unable to get user details, " + ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        // mTextMessage = (TextView) findViewById(R.id.message);
+        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
+    @Override
+    public void onTaskCompleted(String response) {
+        Toast.makeText(this, "Call Responce: " + response, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putInt("ActivityCode", 1);
+        Integer ActivityCde = sharedpreferences.getInt("ActivityCode", 0);
+        if (ActivityCde == 1) {
+            startActivity(new Intent(tabCallDetails.this, newCall.class));
+            finish();
+        }
+        if (ActivityCde == 2) {
+            startActivity(new Intent(tabCallDetails.this, openCall.class));
+            finish();
+        }
+        if (ActivityCde == 3) {
+            startActivity(new Intent(tabCallDetails.this, pendingCall.class));
+            finish();
+        }
+        if (ActivityCde == 4) {
+            startActivity(new Intent(tabCallDetails.this, closedCall.class));
+            finish();
+        }
+
+    }
+
+    public void initializeInfoData(View initializeData) {
+        try {
+            call_veiw_id = (TextView) initializeData.findViewById(R.id.call_veiw_id);
+            call_veiw_date = (TextView) initializeData.findViewById(R.id.call_veiw_date);
+            // call_veiw_rnumber = (TextView)  initializeData.findViewById(R.id.call_veiw_rnumber);
+            call_veiw_productNumber = (TextView) initializeData.findViewById(R.id.call_veiw_productNumber);
+            call_veiw_productType = (TextView) initializeData.findViewById(R.id.call_veiw_productType);
+            call_view_issueDetails = (TextView) initializeData.findViewById(R.id.call_view_issueDetails);
+            call_details_customerName = (TextView) initializeData.findViewById(R.id.call_details_customerName);
+            call_details_mobileNumber = (TextView) initializeData.findViewById(R.id.call_details_mobileNumber);
+            call_details_emailId = (TextView) initializeData.findViewById(R.id.call_details_emailId);
+            call_details_customerAddress = (TextView) initializeData.findViewById(R.id.call_details_customerAddress);
+            // call_time = (TextView)  initializeData.findViewById(R.id.call_time);
+            serviceType = (TextView) findViewById(R.id.serviceType);
+            IssueType = (TextView) findViewById(R.id.IssueType);
+            IssuePriority = (TextView) findViewById(R.id.IssuePriority);
+            LocationCall = (TextView) findViewById(R.id.LocationCall);
+            productName = (TextView) findViewById(R.id.call_veiw_productName);
+            contract_number = (TextView) findViewById(R.id.contract_number);
+            contract_type = (TextView) findViewById(R.id.contract_type);
+            product_details = (TextView) findViewById(R.id.product_details);
+
+        } catch (Exception ee) {
+            onTaskCompleted(ee.getMessage());
+        }
+    }
+
+    private boolean checkPermission(String permission) {
+        if (Build.VERSION.SDK_INT >= 23) {
+            int result = ContextCompat.checkSelfPermission(this, permission);
+            return result == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return true;
+        }
+    }
+
     private void selectImage() {
         final CharSequence[] items = {"Choose from Library",
                 "Cancel" };
@@ -603,7 +598,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
-                boolean result= urlClass.checkPermission(tabCallDetails.this);
+                boolean result = UrlClass.checkPermission(tabCallDetails.this);
                 if (items[item].equals("Take Photo")) {
                     userChoosenTask="Take Photo";
                     if(result)
@@ -699,14 +694,10 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         imageHolder.setImageBitmap(thumbnail);
     }
     private boolean isDeviceSupportCamera() {
-        if (getApplicationContext().getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
+        // this device has a camera
+        // no camera on this device
+        return getApplicationContext().getPackageManager().hasSystemFeature(
+                PackageManager.FEATURE_CAMERA);
     }
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -1076,12 +1067,12 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                             onTaskCompleted("Action Applied !!!");onBackPressed();
                             String callId = sharedpreferences.getString("clickedId","0");
                             CompanyID    = sharedpreferences.getInt(CompanyId,0);
-                            if(!callId.equals(0) && CompanyID!=0){
+                            if (!callId.equals(0) && CompanyID != 0 && CompanyID.toString() != "o0") {
                                 try {
                                     checkInternet = urlClass.checkInternet();
                                     if(checkInternet){
                                         //new update_read_status().execute(callId,CompanyID);
-                                        new getProblemDescription().execute(callId);
+                                        new getProblemDescription().execute(callId, CompanyID.toString());
                                     }else{
                                         onTaskCompleted("Internet connection failed, please check");
                                     }
@@ -1124,8 +1115,11 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             try {
                 String SOAP_ACTION = NameSpace+"getProblemDesc";
                 SoapObject request = new SoapObject(NameSpace, "getProblemDesc");
+                request.addAttribute("companyId", voids[1]);
+                request.addAttribute("companyId2", voids[1]);
                 request.addAttribute("callId",voids[0]);
-                request.addAttribute("companyId",CompanyID);
+
+
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
                 envelope.setOutputSoapObject(request);
                 envelope.dotNet = true;
@@ -1149,15 +1143,21 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         }
 
         @Override
+        protected void onCancelled(String s) {
+            super.onCancelled(s);
+            Log.e("in cancel", s);
+        }
+
+        @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.e("s",s);
+            Log.e("getDesc", s);
             if(!s.equals("") && !s.equals(null)
             ){
                 try {
                     JSONArray jsonArray = new JSONArray(s);
                     if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
+                        for(int i = 0; i<jsonArray.length(); i++){
                             JSONObject jsonObject = jsonArray.getJSONObject(i);
                             String pd = jsonObject.getString("userCallDescription");
                             if(!pd.equals("")){
@@ -1169,13 +1169,15 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                         }
                     } else {
                         Log.i("No Data"," found spinner");
-                       // onTaskCompleted("No Data found spinner");
+                        // onTaskCompleted("No Data found spinner");
                     }
                 } catch (Exception ee){
-                    onTaskCompleted(ee.getLocalizedMessage());
+                    Log.i("No Data", " found spinner");
+                    //onTaskCompleted(ee.getLocalizedMessage());
                 }
             } else {
-                onTaskCompleted("Unable to get details, try gain");
+                Log.i("No Data", " found spinner");
+                //onTaskCompleted("Unable to get details, try gain");
             }
         }
     }
@@ -1223,7 +1225,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                 }
 
             } catch (Exception e){
-                exp_string = e.getLocalizedMessage().toString();
+                exp_string = e.getLocalizedMessage();
             }
             result =err_string;
             return  result;
@@ -1282,7 +1284,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             try {
                 String SOAP_ACTION = NameSpace+"GetCallStatus";
                 SoapObject request = new SoapObject(NameSpace, "GetCallStatus");
-
+                request.addAttribute("companyId", CompanyID);
                 SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
                 envelope.setOutputSoapObject(request);
                 envelope.dotNet = true;
@@ -1476,7 +1478,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.e("SSS-->ss",s.toString());
+            Log.e("SSS-->ss", s);
             dialog.dismiss();
             if(!s.equals("") && !s.equals(null)){
                 try {
