@@ -957,7 +957,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                         } catch (Exception e) {
                             onTaskCompleted(e.getLocalizedMessage());
                         }
-
                     }
                 } else {
                     onTaskCompleted(message);
