@@ -127,6 +127,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     String selectedContract="0";
     LinearLayout layout_user;
     Uri fileUri;
+    Spinner call_action_spinner, call_action_reason_spinner;
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
 
@@ -261,8 +262,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 final View actionDialogView = factory.inflate(R.layout.action_dailog, null);
                                 final AlertDialog actionDialog = new AlertDialog.Builder(tabCallDetails.this).create();
 
-                                final Spinner call_spinner = (Spinner) actionDialogView.findViewById(R.id.call_status_list);
-                                final Spinner call_reason = (Spinner) actionDialogView.findViewById(R.id.call_actionTaken_list);
+                                call_action_spinner = (Spinner) actionDialogView.findViewById(R.id.call_status_list);
+                                call_action_reason_spinner = (Spinner) actionDialogView.findViewById(R.id.call_actionTaken_list);
                                 final EditText action_note_txt = (EditText) actionDialogView.findViewById(R.id.action_note_txt);
                                 spinnerLabelList = new ArrayList<String>();
                                 spinnerLabelListReason = new ArrayList<String>();
@@ -291,43 +292,43 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                         onTaskCompleted(ee.getLocalizedMessage());
                                     }
 
+                                    ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(tabCallDetails.this, android.R.layout.simple_spinner_item, spinnerLabelList);
+                                    dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                    call_action_spinner.setAdapter(dataAdapter);
 
+                                    call_action_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                        @Override
+                                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                            statusId = spinnerIdList.get(position);
+                                        }
+
+                                        @Override
+                                        public void onNothingSelected(AdapterView<?> parent) {
+
+                                        }
+                                    });
+
+
+                                    ArrayAdapter<String> dataAdapterReason = new ArrayAdapter<String>(tabCallDetails.this, android.R.layout.simple_spinner_item, spinnerLabelListReason);
+                                    dataAdapterReason.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                                    call_action_reason_spinner.setAdapter(dataAdapterReason);
+
+                                    call_action_reason_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                                        @Override
+                                        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                            reasonId = spinnerIdListReason.get(position);
+                                        }
+
+                                        @Override
+                                        public void onNothingSelected(AdapterView<?> parent) {
+
+                                        }
+                                    });
 
                                 }catch (Exception ee){
                                     onTaskCompleted(ee.getLocalizedMessage());
                                 }
 
-                                ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(tabCallDetails.this, android.R.layout.simple_spinner_item, spinnerLabelList);
-                                dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                                call_spinner.setAdapter(dataAdapter);
-
-                                call_spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                    @Override
-                                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                        statusId = spinnerIdList.get(position);
-                                    }
-
-                                    @Override
-                                    public void onNothingSelected(AdapterView<?> parent) {
-
-                                    }
-                                });
-
-                                ArrayAdapter<String> dataAdapterReason = new ArrayAdapter<String>(tabCallDetails.this, android.R.layout.simple_spinner_item, spinnerLabelListReason);
-                                dataAdapterReason.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                                call_reason.setAdapter(dataAdapterReason);
-
-                                call_reason.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                    @Override
-                                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                                        reasonId = spinnerIdListReason.get(position);
-                                    }
-
-                                    @Override
-                                    public void onNothingSelected(AdapterView<?> parent) {
-
-                                    }
-                                });
                                 actionDialog.setView(actionDialogView);
 
                                 actionDialogView.findViewById(R.id.btn_apply_action).setOnClickListener(new View.OnClickListener() {
@@ -940,7 +941,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                 String code = jsonObject.getString("code");
                 String message = jsonObject.getString("message");
                 if(code.equals("1")){
-                    onTaskCompleted("Action Applied !!!");onBackPressed();
+                    onTaskCompleted("Action Applied !!!");
                     String callId = sharedpreferences.getString("clickedId","0");
                     CompanyID    = sharedpreferences.getInt(CompanyId,0);
                     if(!callId.equals(0) && CompanyID!=0){
@@ -948,11 +949,12 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                             checkInternet = urlClass.checkInternet();
                             if(checkInternet){
                                 //new update_read_status().execute(callId,CompanyID);
-                                new get_user_chat_list().execute(callId,CompanyID+"");
-                            }else{
+                                // new get_user_chat_list().execute(callId,CompanyID+"");
+                                onBackPressed();
+                            } else {
                                 onTaskCompleted("Internet connection failed, please check");
                             }
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             onTaskCompleted(e.getLocalizedMessage());
                         }
 
