@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -32,9 +31,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.CacheResponse;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class newCallDetails extends AppCompatActivity implements ontaskComplet{
@@ -250,7 +246,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             FileWriter LogWriter = new FileWriter(LogFile, append);
             out = new BufferedWriter(LogWriter);
             Date date = new Date();
-            out.write("Logged at" + String.valueOf(date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "\n"));
+            out.write("Logged at" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds() + "\n");
             out.close();
 
         }
@@ -343,7 +339,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                     String message = jsonObject.getString("message");
                     if(code.equals("1")){
                         onTaskCompleted("Call rejected");
-                        onBackPressed();
+                        startActivity(new Intent(newCallDetails.this, userHome.class));
                     } else {
                         onTaskCompleted("Error:"+message);
                     }
@@ -353,7 +349,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             } else {
                 onTaskCompleted("Unknown error try again");
             }
-            Log.e("reject result",s.toString());
+            Log.e("reject result", s);
         }
     }
     class acceptCall extends AsyncTask<String,String,String>{
@@ -435,7 +431,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                     //Log.e("sub A s","s"+sub);
                     if (code.equals("1")) {
                         onTaskCompleted("Call accept and moved in started call");
-                        onBackPressed();
+                        startActivity(new Intent(newCallDetails.this, userHome.class));
                     } else {
                         onTaskCompleted("Error:"+message);
                     }
@@ -445,7 +441,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             } else{
                 onTaskCompleted("Unknown error try again");
             }
-            Log.e("accept result",s.toString());
+            Log.e("accept result", s);
         }
     }
     class getCallDetails extends AsyncTask<Integer,String,String> {
@@ -517,7 +513,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             super.onPostExecute(s);
 
             dialog.dismiss();
-            Log.e("SSS-->ss",s.toString());
+            Log.e("SSS-->ss", s);
             if(!s.equals("") && !s.equals(null)){
                 try {
                     dialog.dismiss();
