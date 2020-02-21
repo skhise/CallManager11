@@ -133,6 +133,7 @@ public class check_notification extends Service {
                 String api = urlString + "check_notification.php";
                 HttpClient httpClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost(api);
+
                 List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
                 nameValuePairs.add(new BasicNameValuePair("userId", userId));
                 nameValuePairs.add(new BasicNameValuePair("companyId", companyId));

@@ -1,14 +1,13 @@
 package com.yashada.callmanager;
 
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothClass;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.Gravity;
@@ -22,6 +21,11 @@ import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class Login extends AppCompatActivity{
 
@@ -77,6 +81,7 @@ public class Login extends AppCompatActivity{
                 } else if(deviceId.equals("") || deviceId.equals(null)){
                     Toast.makeText(Login.this, "Unable to get device Id", Toast.LENGTH_SHORT).show();
                 } else {
+
                     checkLogin(email,password,deviceId);
                 }
 
@@ -89,11 +94,116 @@ public class Login extends AppCompatActivity{
     public void checkLogin(String email, String password,String deviceId){
         boolean checkInternet = urlClass.checkInternet();
         if(checkInternet){
-            new check_login().execute(email,password,deviceId);
+            //  new check_login().execute(email,password,deviceId);
+            new RetrieveFeedTask().execute(email, password, deviceId);
         } else {
             Toast.makeText(Login.this,"Internet connection failed, please check",Toast.LENGTH_LONG).show();
         }
 
+    }
+
+    class RetrieveFeedTask extends AsyncTask<String, String, String> {
+
+
+        public ProgressDialog dialog =
+                new ProgressDialog(Login.this);
+        String UserPassword = "";
+
+        protected void onPreExecute() {
+            super.onPreExecute();
+            dialog.setMessage("Please wait...");
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+        }
+
+        @Override
+        protected String doInBackground(String... settings) {
+            try {
+                UserPassword = settings[1];
+                URL url = new URL("http://service.newpro.in/app_slim/v1/login?" + "loginName=" + settings[0] + "&password=" + settings[1] + "&deviceId=" + settings[2]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("POST");
+                urlConnection.setRequestProperty("content-length", "0");
+                urlConnection.setConnectTimeout(3000);
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                } finally {
+                    urlConnection.disconnect();
+                }
+            } catch (Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String result) {
+            dialog.dismiss();
+            if (result != "" && !result.equals(null)) {
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    Integer code = jsonObject.getInt("code");
+                    if (code == 1) {
+                        Integer uid = jsonObject.getInt("UserID");
+                        Integer Companyid = jsonObject.getInt("CompanyId");
+                        String UserName = jsonObject.getString("UserName");
+                        Integer Role = jsonObject.getInt("Role");
+                        //  String RoleName = jsonObject.getString("RoleName");
+                        String RoleName = "User";
+                        Boolean IsActive = jsonObject.getBoolean("IsActive");
+                        Boolean IsActiveCompany = jsonObject.getBoolean("IsActiveCompany");
+                        String CompanyName = jsonObject.getString("CompanyName");
+                        if (!uid.equals("") && IsActive.equals(true) && !Companyid.equals("") && IsActiveCompany.equals(true) && (Role.equals("5") || RoleName.equals("User"))) {
+                            try {
+
+                                SharedPreferences.Editor editor = sharedpreferences.edit();
+                                editor.putString(USERNAME, UserName);
+                                editor.putString(PASSWORD, UserPassword);
+                                editor.putInt(UserId, uid);
+                                editor.putInt(CompanyId, Companyid);
+                                editor.putString(roleName, RoleName);
+                                editor.putInt(USERROLE, Role);
+                                editor.putString(USERCNAME, CompanyName);
+                                editor.putBoolean(IsCompanyActive, IsActiveCompany);
+                                editor.putBoolean(IsUserActive, IsActive);
+
+
+                                Intent userHome = new Intent(Login.this, userHome.class);
+                                startActivity(userHome);
+                                editor.putString("online", "1");
+                                editor.apply();
+                                editor.commit();
+                                startService(new Intent(Login.this, onlineService.class));
+                                startService(new Intent(Login.this, locationService.class));
+                            } catch (Exception ee) {
+                                Toast.makeText(getApplicationContext(), "Error in read user input" + ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+                        }
+                    } else if (code == 3) {
+                        Toast.makeText(getApplicationContext(), "User active on other device", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+                    }
+
+
+                } catch (Exception ee) {
+
+                    Toast.makeText(getApplicationContext(), ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                }
+
+            } else {
+                Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+            }
+
+        }
     }
 
     public class check_login extends AsyncTask<String,String, String> {
