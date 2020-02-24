@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -16,6 +17,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
@@ -26,6 +36,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import com.yashada.callmanager.AppController;
 
 public class Login extends AppCompatActivity{
 
@@ -89,18 +102,124 @@ public class Login extends AppCompatActivity{
         });
 
     }
-
-
-    public void checkLogin(String email, String password,String deviceId){
+    public void checkLogin(final String email, final String password, final String deviceId){
         boolean checkInternet = urlClass.checkInternet();
         if(checkInternet){
             //  new check_login().execute(email,password,deviceId);
-            new RetrieveFeedTask().execute(email, password, deviceId);
+            //new RetrieveFeedTask().execute(email, password, deviceId);
+
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            try{
+
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("loginName", email);
+                jsonObject.put("password", password);
+                jsonObject.put("deviceId", deviceId);
+
+                String url = "http://service.newpro.in/app_slim/v1/login?" +"loginName=" + email +"&password=" + password +"&deviceId=" + deviceId;
+
+                JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+                        url,jsonObject,
+                        new Response.Listener<JSONObject>() {
+
+                            @Override
+                            public void onResponse(JSONObject jsonObject) {
+                                Log.d("Login", jsonObject.toString());
+                                pDialog.hide();
+                                try {
+                                    Integer code = jsonObject.getInt("code");
+                                    if (code == 1) {
+                                        Integer uid = jsonObject.getInt("UserID");
+                                        Integer Companyid = jsonObject.getInt("CompanyId");
+                                        String UserName = jsonObject.getString("UserName");
+                                        Integer Role = jsonObject.getInt("Role");
+                                        //  String RoleName = jsonObject.getString("RoleName");
+                                        String RoleName = "User";
+                                        Boolean IsActive = jsonObject.getBoolean("IsActive");
+                                        Boolean IsActiveCompany = jsonObject.getBoolean("IsActiveCompany");
+                                        String CompanyName = jsonObject.getString("CompanyName");
+                                        if (!uid.equals("") && IsActive.equals(true) && !Companyid.equals("") && IsActiveCompany.equals(true) && (Role.equals("5") || RoleName.equals("User"))) {
+                                            try {
+
+                                                SharedPreferences.Editor editor = sharedpreferences.edit();
+                                                editor.putString(USERNAME, UserName);
+                                                editor.putString(PASSWORD, password);
+                                                editor.putInt(UserId, uid);
+                                                editor.putInt(CompanyId, Companyid);
+                                                editor.putString(roleName, RoleName);
+                                                editor.putInt(USERROLE, Role);
+                                                editor.putString(USERCNAME, CompanyName);
+                                                editor.putBoolean(IsCompanyActive, IsActiveCompany);
+                                                editor.putBoolean(IsUserActive, IsActive);
+
+
+                                                Intent userHome = new Intent(Login.this, userHome.class);
+                                                startActivity(userHome);
+                                                editor.putString("online", "1");
+                                                editor.apply();
+                                                editor.commit();
+                                                startService(new Intent(Login.this, onlineService.class));
+                                                startService(new Intent(Login.this, locationService.class));
+                                            } catch (Exception ee) {
+                                                Toast.makeText(getApplicationContext(), "Error in read user input" + ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                            }
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+                                        }
+                                    } else if (code == 3) {
+                                        Toast.makeText(getApplicationContext(), "User active on other device", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+                                    }
+
+
+                                } catch (Exception ee) {
+
+                                }
+
+                            }
+                        }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        VolleyLog.d("Login", "Error: " + error.getMessage());
+                        Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                        pDialog.hide();
+                    }
+                }){
+                    @Override
+                    public Request.Priority getPriority() {
+                        return Priority.IMMEDIATE;
+                    }
+
+                    @Override
+                    public Map<String, String> getHeaders() throws AuthFailureError {
+                        HashMap<String, String> headers = new HashMap<String, String>();
+                        headers.put("Content-Type", "application/json; charset=utf-8");
+
+                        return headers;
+                    }
+                };
+
+
+// Adding request to request queue
+
+             //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+                RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+                queue.add(jsonObjReq);
+            }catch (Exception e){
+                pDialog.hide();
+                e.printStackTrace();
+                Toast.makeText(Login.this,"Login:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+            }
         } else {
             Toast.makeText(Login.this,"Internet connection failed, please check",Toast.LENGTH_LONG).show();
         }
 
     }
+
 
     class RetrieveFeedTask extends AsyncTask<String, String, String> {
 

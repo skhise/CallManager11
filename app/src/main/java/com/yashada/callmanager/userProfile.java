@@ -14,12 +14,21 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,6 +40,8 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -105,7 +116,8 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
                         Log.e("companyId",""+companyId);
 
                         if(checkInternet){
-                            new update_eng_info().execute(userId.toString(),companyId.toString());
+                        //    new update_eng_info().execute(userId.toString(),companyId.toString());
+                            update_eng_info(userId,companyId);
                         } else {
                             onTaskCompleted("Internet connection failed, please check");
                         }
@@ -122,7 +134,8 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
                 Log.e("userId",""+userId);
                 Log.e("companyId",""+companyId);
                 if(checkInternet){
-                    new get_eng_info().execute(userId.toString(),companyId.toString());
+                 //   new get_eng_info().execute(userId.toString(),companyId.toString());
+                    get_eng_info(userId,companyId);
                 } else {
                     onTaskCompleted("Internet connection failed, please check");
                 }
@@ -147,6 +160,87 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
         super.onBackPressed();
         finish();
         startActivity(new Intent(userProfile.this,userHome.class));
+    }
+    public void update_eng_info(Integer UserId, Integer companyId){
+        //EditEngineerProfile
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+
+            Calendar c = Calendar.getInstance();
+
+            SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+            String formattedDate = df.format(c.getTime());
+
+            String emp_name = eng_name.getText().toString();
+            String emp_email = eng_email.getText().toString();
+            String emp_contact = eng_contact.getText().toString();
+            String emp_address = eng_address.getText().toString();
+            final String url = "http://service.newpro.in/app_slim/v1/EditEngineerProfile?UserId=" + UserId +"" +
+                    "&CurrentDateTime="+formattedDate+"&Address="+emp_address+"&Phone="+emp_contact+"&" +
+                    "Email="+emp_email+"&companyId=" + companyId+"&Name="+emp_name;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("User Profile", jsonArray.toString()+" url:"+url);
+
+                            pDialog.hide();
+                            if(jsonArray.length()>0){
+                                try {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                    Integer code = jsonObject.getInt("code");
+                                    if(code == 1){
+                                        onTaskCompleted("Details updated");
+                                    } else{
+                                        onTaskCompleted("Failed to update or no changed try again");
+                                    }
+                                } catch (Exception ee){
+                                    Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                                }
+
+                            } else {
+                                Toast.makeText(getApplicationContext(),"User not found",Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(userProfile.this,"User Profile:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
     }
     public class update_eng_info extends AsyncTask<String,String,String>{
 
@@ -243,6 +337,80 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
                 onTaskCompleted(e.getMessage());
             }
 
+        }
+    }
+    public void get_eng_info(Integer UserId, Integer companyId){
+        //GetSelectedCallByID
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            final String url = "http://service.newpro.in/app_slim/v1/EngineerProfile?userId=" + UserId +"&companyId=" + companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("User Profile", jsonArray.toString()+" url:"+url);
+
+                            pDialog.hide();
+                            if(jsonArray.length()>0){
+                                try {
+                                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                    String name = jsonObject.getString("Name");
+                                    String email = jsonObject.getString("EmailId");
+                                    String phoneNo = jsonObject.getString("PhoneNo");
+                                    String Location = jsonObject.getString("Location");
+
+                                    eng_email.setText(email);
+                                    nameENG.setText(name);
+                                    emailENG.setText(email);
+                                    eng_contact.setText(phoneNo);
+                                    eng_address.setText(Location);
+                                    eng_name.setText(name);
+                                } catch (Exception ee){
+                                    Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                                }
+
+                            } else {
+                                Toast.makeText(getApplicationContext(),"User not found",Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(userProfile.this,"User Profile:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
     public class get_eng_info extends AsyncTask<String,String, String> {

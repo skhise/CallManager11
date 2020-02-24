@@ -22,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.Filter;
@@ -29,6 +30,14 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,7 +49,9 @@ import org.ksoap2.transport.HttpTransportSE;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +93,7 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
         new_listView = (ListView) findViewById(R.id.new_call_list);
 
         contactList = new ArrayList<Contact>();
-        adapter = new ListAdaptor(contactList, newCall.this);
+
         checkInternet = urlClass.checkInternet();
         try {
             search_call = (SearchView) findViewById(R.id.search_call);
@@ -113,7 +124,8 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
                 try {
                     checkInternet = urlClass.checkInternet();
                     if(checkInternet){
-                        new loadNewCalls().execute(UserID,CompanyID);
+                      //  new loadNewCalls().execute(UserID,CompanyID);
+                        loadNewCalls(UserID,CompanyID);
                     } else {
                         onTaskCompleted("Internet connection failed, please check");
                     }
@@ -139,14 +151,14 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
                             if(checkInternet){
                                 addNotification();
                                 contactList.clear();
-                                new loadNewCalls().execute(UserID,CompanyID);
+                               // new loadNewCalls().execute(UserID,CompanyID);
+                                loadNewCalls(UserID,CompanyID);
                             } else{
                                 onTaskCompleted("Internet connection failed, please check");
                             }
                         }catch (Exception ee){
                             onTaskCompleted(ee.getLocalizedMessage());
                         }
-
                     } else {
                         Toast.makeText(newCall.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
                     }
@@ -220,133 +232,120 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
         finish();
         startActivity(new Intent(newCall.this,userHome.class));
     }
+    public void loadNewCalls(Integer UserId, Integer companyId){
+        //GetSelectedCallByID
 
-    class loadNewCalls extends AsyncTask<Integer,String,String> {
-
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        public ProgressDialog dialog =
-                new ProgressDialog(newCall.this);
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog.setMessage("Loading...");
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-        }
-
-        @Override
-        protected String doInBackground(Integer... params) {
-
-            String result = "";
-            Integer UserID = params[0];
-            Integer companyId = params[1];
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
             Integer statusId = 3;
-            String SOAP_ACTION = NameSpace+"GetCalls";
-            SoapObject request = new SoapObject(NameSpace, "GetCalls");
-            request.addProperty("UserID",UserID);
-            request.addProperty("companyId",companyId);
-            request.addProperty("statusId",statusId);
-            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-            envelope.setOutputSoapObject(request);
-            envelope.dotNet = true;
-            HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-            try {
-                androidHttpTransport.call(SOAP_ACTION, envelope);
+            final String url = "http://service.newpro.in/app_slim/v1/GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
 
-                result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                if(request.equals("")){
-                    Object re= null;
-                    re = envelope.getResponse();
-                    // return re.toString();
-                }
-                return  result;
-            } catch (Exception e) {
-                System.out.println("Error"+e);
-                onTaskCompleted(e.getLocalizedMessage());
-            }
-            return result;
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
 
-        }
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            dialog.dismiss();
-            onTaskCompleted("Unable to connect server");
-        }
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            dialog.dismiss();
-            Log.e("New Call",""+s);
-            if(!s.equals("") && !s.equals(null)){
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("New Call List", jsonArray.toString()+" url:"+url);
 
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            String CallNo = jsonObject.getString("CallNo");
-                            String Date = jsonObject.getString("CallDatestr");
-                            String CustomerName = jsonObject.getString("CustomerName");
-                            String CallStatusName = jsonObject.getString("CallStatusName");
-                            String system_call_id = jsonObject.getString("Id");
-                            String callLife = jsonObject.getString("callAlive");
-                            String time = jsonObject.getString("modifyAt");
+                            pDialog.hide();
+                            try {
+                                if(jsonArray.length()>0){
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        String CallNo = jsonObject.getString("CallNo");
+                                        String Date = jsonObject.getString("CallDatestr");
+                                        String CustomerName = jsonObject.getString("CustomerName");
+                                        String CallStatusName = jsonObject.getString("CallStatusName");
+                                        String system_call_id = jsonObject.getString("Id");
+                                        String callLife = jsonObject.getString("callAlive");
+                                        String time = jsonObject.getString("modifyAt");
 
-                            if(CallStatusName.equals("Forward")) {
-                                try {
-                                    // String dateNew = parseDate(Date);
-                                    Contact pendingContact = new Contact();
-                                    pendingContact.setCustomer_name(CustomerName);
-                                    pendingContact.setDate_time(Date);
-                                    pendingContact.setCall_id(CallNo);
-                                    pendingContact.setService_type("");
-                                    pendingContact.setSystem_call_id(system_call_id);
-                                    pendingContact.setCallAlive(callLife);
-                                    pendingContact.setActionTime(Integer.parseInt(time));
-                                    contactList.add(pendingContact);
-                                } catch (Exception e) {
-                                    Log.e("displayCountryList: ",e.getLocalizedMessage());
+                                        if(CallStatusName.equals("Forward")) {
+                                            try {
+                                                // String dateNew = parseDate(Date);
+                                                Contact pendingContact = new Contact();
+                                                pendingContact.setCustomer_name(CustomerName);
+                                                pendingContact.setDate_time(Date);
+                                                pendingContact.setCall_id(CallNo);
+                                                pendingContact.setService_type("");
+                                                pendingContact.setSystem_call_id(system_call_id);
+                                                pendingContact.setCallAlive(callLife);
+                                                pendingContact.setActionTime(Integer.parseInt(time));
+                                                contactList.add(pendingContact);
+                                            } catch (Exception e) {
+                                                Log.e("displayCountryList: ",e.getLocalizedMessage());
+                                            }
+                                        }
+                                    }
+                                    adapter = new ListAdaptor(contactList, newCall.this);
+                                    new_listView.setAdapter(adapter);
+                                    new_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                        @Override
+                                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                            String callId = contactList.get(position).getCall_id();
+                                            SharedPreferences.Editor editor =sharedpreferences.edit();
+                                            editor.putInt("ActivityCode",1);
+                                            editor.putString("clickedId",callId);
+                                            editor.apply();
+                                            editor.commit();
+                                            try {
+                                                if(checkInternet){
+                                                    Intent callDetails = new Intent(newCall.this,newCallDetails.class);
+                                                    callDetails.putExtra("activity_name","New Call View");
+                                                    startActivity(callDetails);
+                                                    finish();
+                                                } else{
+                                                    onTaskCompleted("Internet connection failed, please check");
+                                                }
+                                            }catch (Exception e){
+                                                onTaskCompleted(e.getLocalizedMessage());
+                                            }
+
+
+                                        }
+                                    });
+                                } else {
+                                    onTaskCompleted("No Data found");
                                 }
+                            } catch (Exception ee){
+                                onTaskCompleted(ee.getLocalizedMessage());
                             }
                         }
+                    }, new Response.ErrorListener() {
 
-                        new_listView.setAdapter(adapter);
-                        new_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                String callId = contactList.get(position).getCall_id();
-                                SharedPreferences.Editor editor =sharedpreferences.edit();
-                                editor.putInt("ActivityCode",1);
-                                editor.putString("clickedId",callId);
-                                editor.apply();
-                                editor.commit();
-                                try {
-                                    if(checkInternet){
-                                        Intent callDetails = new Intent(newCall.this,newCallDetails.class);
-                                        callDetails.putExtra("activity_name","New Call View");
-                                        startActivity(callDetails);
-                                        finish();
-                                    } else{
-                                        onTaskCompleted("Internet connection failed, please check");
-                                    }
-                                }catch (Exception e){
-                                    onTaskCompleted(e.getLocalizedMessage());
-                                }
-
-
-                            }
-                        });
-                    } else {
-                        onTaskCompleted("No Data found");
-                    }
-                } catch (Exception ee){
-                    onTaskCompleted(ee.getLocalizedMessage());
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
                 }
-            } else{
-                onTaskCompleted("Unable to get details, try gain");
-            }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(newCall.this,"New Call:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
 

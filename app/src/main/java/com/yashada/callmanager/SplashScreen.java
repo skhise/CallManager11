@@ -25,11 +25,22 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
+
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -165,8 +176,8 @@ public class SplashScreen extends AppCompatActivity {
     }
     private void startApp(){
 
-        String loginName = sharedpreferences.getString(USERNAME,"");
-        String loginPassword = sharedpreferences.getString(PASSWORD,"");
+        final String loginName = sharedpreferences.getString(USERNAME,"");
+        final String loginPassword = sharedpreferences.getString(PASSWORD,"");
         Integer loginUserId = sharedpreferences.getInt(UserId,0);
         Integer company_id = sharedpreferences.getInt(CompanyId,0);
         deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(),
@@ -177,7 +188,136 @@ public class SplashScreen extends AppCompatActivity {
                 checkInternet = urlClass.checkInternet();
                 if(checkInternet){
                     if(deviceId!="" && deviceId!=null){
-                        new check_login().execute(loginName,loginPassword,deviceId);
+                        //new check_login().execute(loginName,loginPassword,deviceId);
+
+                        final ProgressDialog pDialog = new ProgressDialog(this);
+                        pDialog.setMessage("Loading...");
+                        pDialog.show();
+                        try{
+
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("loginName", loginName);
+                            jsonObject.put("password", loginPassword);
+                            jsonObject.put("deviceId", deviceId);
+
+                            String url = "http://service.newpro.in/app_slim/v1/login?" +"loginName=" + loginName +"&password=" + loginPassword +"&deviceId=" + deviceId;
+
+                            JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+                                    url,jsonObject,
+                                    new Response.Listener<JSONObject>() {
+
+                                        @Override
+                                        public void onResponse(JSONObject jsonObject) {
+                                            Log.d("Login", jsonObject.toString());
+                                            pDialog.hide();
+                                            try {
+                                                Integer code = jsonObject.getInt("code");
+                                                if (code == 1) {
+                                                    Integer uid = jsonObject.getInt("UserID");
+                                                    Integer Companyid = jsonObject.getInt("CompanyId");
+                                                    String UserName = jsonObject.getString("UserName");
+                                                    Integer Role = jsonObject.getInt("Role");
+                                                    //  String RoleName = jsonObject.getString("RoleName");
+                                                    String RoleName = "User";
+                                                    Boolean IsActive = jsonObject.getBoolean("IsActive");
+                                                    Boolean IsActiveCompany = jsonObject.getBoolean("IsActiveCompany");
+                                                    String CompanyName = jsonObject.getString("CompanyName");
+                                                    if (!uid.equals("") && IsActive.equals(true) && !Companyid.equals("") && IsActiveCompany.equals(true) && (Role.equals("5") || RoleName.equals("User"))) {
+                                                        try {
+
+                                                            SharedPreferences.Editor editor = sharedpreferences.edit();
+                                                            editor.putString(USERNAME, UserName);
+                                                            editor.putString(PASSWORD, loginPassword);
+                                                            editor.putInt(UserId, uid);
+                                                            editor.putInt(CompanyId, Companyid);
+                                                            editor.putString(roleName, RoleName);
+                                                            editor.putInt(USERROLE, Role);
+                                                            editor.putString(USERCNAME, CompanyName);
+                                                            editor.putBoolean(IsCompanyActive, IsActiveCompany);
+                                                            editor.putBoolean(IsUserActive, IsActive);
+
+
+                                                            Intent userHome = new Intent(SplashScreen.this, userHome.class);
+                                                            startActivity(userHome);
+                                                            editor.putString("online", "1");
+                                                            editor.apply();
+                                                            editor.commit();
+                                                            startService(new Intent(SplashScreen.this, onlineService.class));
+                                                            startService(new Intent(SplashScreen.this, locationService.class));
+                                                        } catch (Exception ee) {
+                                                            Toast.makeText(getApplicationContext(), "Error in read user input" + ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                                                            Intent intent = new Intent(SplashScreen.this, Login.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                            startActivity(intent);
+                                                            finish();
+                                                        }
+                                                    } else {
+                                                        Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+                                                        Intent intent = new Intent(SplashScreen.this, Login.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                        startActivity(intent);
+                                                        finish();
+                                                    }
+                                                } else if (code == 3) {
+                                                    Toast.makeText(getApplicationContext(), "User active on other device", Toast.LENGTH_LONG).show();
+                                                    Intent intent = new Intent(SplashScreen.this, Login.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    startActivity(intent);
+                                                    finish();
+                                                } else {
+                                                    Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
+                                                    Intent intent = new Intent(SplashScreen.this, Login.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    startActivity(intent);
+                                                    finish();
+                                                }
+
+
+                                            } catch (Exception ee) {
+
+                                            }
+
+                                        }
+                                    }, new Response.ErrorListener() {
+
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                                    Toast.makeText(getApplicationContext(),"Login failed, Try again",Toast.LENGTH_LONG).show();
+                                    Intent intent = new Intent(SplashScreen.this, Login.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(intent);
+                                    finish();
+                                    pDialog.hide();
+                                }
+                            }){
+                                @Override
+                                public Request.Priority getPriority() {
+                                    return Priority.IMMEDIATE;
+                                }
+
+                                @Override
+                                public Map<String, String> getHeaders() throws AuthFailureError {
+                                    HashMap<String, String> headers = new HashMap<String, String>();
+                                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                                    return headers;
+                                }
+                            };
+
+
+// Adding request to request queue
+
+                            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+                            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+                            queue.add(jsonObjReq);
+                        }catch (Exception e){
+                            pDialog.hide();
+                            e.printStackTrace();
+                            Toast.makeText(SplashScreen.this,"Login:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(SplashScreen.this, Login.class);
+                            startActivity(intent);
+                            finish();
+
+                        }
+
+
+
                     } else {
 
                         final AlertDialog.Builder builder = new AlertDialog.Builder(this);

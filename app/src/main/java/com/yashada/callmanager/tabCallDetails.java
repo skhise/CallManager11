@@ -46,6 +46,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -72,8 +80,10 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
@@ -156,7 +166,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 Integer cId = Integer.parseInt(clickedId);
                                 checkInternet = urlClass.checkInternet();
                                 if(checkInternet){
-                                    new getCallDetails().execute(logedUserID,cId,CompanyID);
+                                    //new getCallDetails().execute(logedUserID,cId,CompanyID);
+                                    getCallDetails(logedUserID,CompanyID,cId);
                                 }else{
                                     onTaskCompleted("Internet connection failed, please check");
                                 }
@@ -195,8 +206,10 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 if(checkInternet){
                                     //new update_read_status().execute(callId,CompanyID);
                                     Log.e("CompanyID", CompanyID + "");
-                                    new get_user_chat_list().execute(callId,CompanyID+"");
-                                    new getProblemDescription().execute(callId, CompanyID.toString());
+                                   // new get_user_chat_list().execute(callId,CompanyID+"");
+                                    get_user_chat_list(Integer.parseInt(callId),CompanyID);
+                                    getProblemDescription(Integer.parseInt(callId),CompanyID);
+                                    //new getProblemDescription().execute(callId, CompanyID.toString());
                                 }else{
                                     onTaskCompleted("Internet connection failed, please check");
                                 }
@@ -227,7 +240,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                                 try{
                                                     checkInternet = urlClass.checkInternet();
                                                     if(checkInternet){
-                                                        new addCallDescription().execute(description);
+                                                        addCallDescription(description);
+                                                      //  new addCallDescription().execute();
                                                     }else{
                                                         onTaskCompleted("Internet connection failed, please check");
                                                     }
@@ -283,8 +297,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                     try {
                                         checkInternet = urlClass.checkInternet();
                                         if(checkInternet){
-                                            new getCallStatus().execute();
-                                            new getCallReason().execute(CompanyID);
+                                            getCallStatus(CompanyID);
+                                            getCallReason(CompanyID);
                                         }else{
                                             onTaskCompleted("Internet connection failed, please check");
                                         }
@@ -362,7 +376,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                             try{
                                                 checkInternet = urlClass.checkInternet();
                                                 if(checkInternet){
-                                                    new applyActionOnCall().execute(Note);
+                                                   // new applyActionOnCall().execute(Note);
+                                                    applyActionOnCall(Note);
                                                     actionDialog.dismiss();
                                                 }else{
                                                     onTaskCompleted("Internet connection failed, please check");
@@ -501,7 +516,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     Integer cId = Integer.parseInt(clickedId);
                     Log.e("clickedId->", cId + "");
                     if (checkInternet) {
-                        new getCallDetails().execute(logedUserID, cId, CompanyID);
+                        //new getCallDetails().execute(logedUserID, cId, CompanyID);
+                        getCallDetails(logedUserID,CompanyID,cId);
                         userLocation = share_user_location();
                     } else {
                         onTaskCompleted("Internet connection failed, please check");
@@ -861,333 +877,255 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         return  userLocation;
         }
 
-    class applyActionOnCall extends AsyncTask<String,Integer,String>{
+    public void applyActionOnCall(String note){
+        //GetSelectedCallByID
 
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        public ProgressDialog dialog =
-                new ProgressDialog(tabCallDetails.this);
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog.setMessage("Loading...");
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-        }
-
-        @Override
-        protected String doInBackground(String... integers) {
-
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
 
             Integer callId = sharedpreferences.getInt("callId",0);
-            String note = integers[0];
-            String result = "";
-            try{
-                String SOAP_ACTION = NameSpace+"CallActions";
-                SoapObject request = new SoapObject(NameSpace, "CallActions");
-                request.addProperty("companyId",CompanyID);
-                request.addProperty("callId",callId);
-                request.addProperty("action",statusId);
-                request.addProperty("CallReasonId",reasonId);
-                request.addProperty("action_note",note);
-                request.addProperty("UserId",logedUserID);
-                request.addProperty("userRole",UuserRole);
-                request.addProperty("userLocation",userLocation);
+            final String url = "http://service.newpro.in/app_slim/v1/CallActions?userLocation="+userLocation+"&userRole="+UuserRole+
+                    "&UserId="+logedUserID+"&action_note="+note+"&CallReasonId="+reasonId+
+                    "&action="+statusId+"&callId="+callId+"&companyId=" + CompanyID;
 
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                try {
-                    androidHttpTransport.call(SOAP_ACTION, envelope);
-                    if(envelope.bodyIn instanceof SoapFault){
-                        String str= ((SoapFault) envelope.bodyIn).faultstring;
-                        Log.e("eeeee", str);
-                    } else {
-                        result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                    }
-                    if (request.equals("")) {
-                        Object re = null;
-                        re = envelope.getResponse();
-                        return re.toString();
-                    }
-                } catch (Exception ee){
-                    Log.getStackTraceString(ee);
-                    onTaskCompleted(ee.getLocalizedMessage());
-                }
-            }catch (Exception ee){
-                Log.getStackTraceString(ee);
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
 
-            return  result;
-        }
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            dialog.dismiss();
-            onTaskCompleted("Unable to connect server");
-        }
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.e("CallActions", jsonArray.toString()+"url:"+url);
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            dialog.dismiss();
-            Log.e("ssss",s);
-            try{
-                JSONArray jsonArray = new JSONArray(s);
-                JSONObject jsonObject = jsonArray.getJSONObject(0);
-                String code = jsonObject.getString("code");
-                String message = jsonObject.getString("message");
-                if(code.equals("1")){
-                    onTaskCompleted("Action Applied !!!");
-                    String callId = sharedpreferences.getString("clickedId","0");
-                    CompanyID    = sharedpreferences.getInt(CompanyId,0);
-                    if(!callId.equals(0) && CompanyID!=0){
-                        try {
-                            checkInternet = urlClass.checkInternet();
-                            if(checkInternet){
-                                //new update_read_status().execute(callId,CompanyID);
-                                // new get_user_chat_list().execute(callId,CompanyID+"");
-                                onBackPressed();
-                            } else {
-                                onTaskCompleted("Internet connection failed, please check");
+                            pDialog.hide();
+                            try{
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                String code = jsonObject.getString("code");
+                                String message = jsonObject.getString("message");
+                                if(code.equals("1")){
+                                    onTaskCompleted("Action Applied !!!");
+                                    String callId = sharedpreferences.getString("clickedId","0");
+                                    CompanyID    = sharedpreferences.getInt(CompanyId,0);
+                                    if(!callId.equals(0) && CompanyID!=0){
+                                        try {
+                                            checkInternet = urlClass.checkInternet();
+                                            if(checkInternet){
+                                                //new update_read_status().execute(callId,CompanyID);
+                                                // new get_user_chat_list().execute(callId,CompanyID+"");
+                                                get_user_chat_list(Integer.parseInt(callId),CompanyID);
+                                                onBackPressed();
+                                            } else {
+                                                onTaskCompleted("Internet connection failed, please check");
+                                            }
+                                        } catch (Exception e) {
+                                            onTaskCompleted(e.getLocalizedMessage());
+                                        }
+                                    }
+                                } else {
+                                    onTaskCompleted(message);
+                                }
+                            } catch (Exception e){
+                                onTaskCompleted(e.getMessage());
                             }
-                        } catch (Exception e) {
-                            onTaskCompleted(e.getLocalizedMessage());
+
                         }
-                    }
-                } else {
-                    onTaskCompleted(message);
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
                 }
-            } catch (Exception e){
-                onTaskCompleted(e.getMessage());
-            }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
-    class  addCallDescription extends AsyncTask<String,String,String> {
+    public void addCallDescription(String action_note){
+        //GetSelectedCallByID
 
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        public ProgressDialog dialog =
-                new ProgressDialog(tabCallDetails.this);
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            try {
-                dialog.setMessage("Loading...");
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-            } catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            String callId       = sharedpreferences.getString("clickedId","0");
+            logedUserID       = sharedpreferences.getInt(UserId,0);
 
-            }
-        }
-
-        @Override
-        protected String doInBackground(String... strings) {
+            Integer c = Integer.parseInt(callId);
 
 
-            String result = "";
-            try {
-                StrictMode
-                        .ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
-                        .permitAll().build();
-                StrictMode.setThreadPolicy(policy);
-                String callId       = sharedpreferences.getString("clickedId","0");
-                logedUserID       = sharedpreferences.getInt(UserId,0);
+            String url = "http://service.newpro.in/app_slim/v1/SendMessage?ActionNote="+action_note+"&CallId="+c+"&CompanyId=" + CompanyID;
 
-                Integer c = Integer.parseInt(callId);
-                String description = strings[0];
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
 
-                String SOAP_ACTION = NameSpace+"SendMessage";
-                SoapObject request = new SoapObject(NameSpace,"SendMessage");
-                PropertyInfo callIdP = new PropertyInfo();
-                PropertyInfo UserId = new PropertyInfo();
-                UserId.setName("companyId");
-                UserId.setValue(CompanyID);
-                UserId.setType(Integer.class);
-                request.addProperty(UserId);
-                callIdP.setName("callId");
-                callIdP.setValue(c);
-                callIdP.setType(Integer.class);
-                request.addProperty(callIdP);
-                PropertyInfo Text = new PropertyInfo();
-                Text.setName("action_note");
-                Text.setValue(description);
-                Text.setType(String.class);
-                request.addProperty(Text);
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Add CallD", jsonArray.toString());
 
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                try {
-                    androidHttpTransport.call(SOAP_ACTION, envelope);
-                    if(envelope.bodyIn instanceof SoapFault){
-                        String str= ((SoapFault) envelope.bodyIn).faultstring;
-                        Log.e("eeeee", str);
-                    } else {
-                        result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                    }
-                    if (request.equals("")) {
-                        Object re = null;
-                        re = envelope.getResponse();
-                        return re.toString();
-                    }
-                }catch (Exception ee){
-
-                    onTaskCompleted(ee.getLocalizedMessage());
-                }
-
-            }catch (Exception ee){
-                Log.getStackTraceString(ee);
-                onTaskCompleted(ee.getLocalizedMessage());
-
-            }
-            return  result;
-
-        }
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            try{
-                dialog.dismiss();
-            }catch (Exception ee){
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-        }
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            try{
-                dialog.dismiss();
-                try {
-                    try{
-                        JSONObject jsonObject = new JSONObject(s);
-                        String code = jsonObject.getString("code");
-                        String message = jsonObject.getString("message");
-                        if(code.equals("1")){
-                            onTaskCompleted("Action Applied !!!");onBackPressed();
-                            String callId = sharedpreferences.getString("clickedId","0");
-                            CompanyID    = sharedpreferences.getInt(CompanyId,0);
-                            if (!callId.equals(0) && CompanyID != 0 && CompanyID.toString() != "o0") {
-                                try {
-                                    checkInternet = urlClass.checkInternet();
-                                    if(checkInternet){
-                                        //new update_read_status().execute(callId,CompanyID);
-                                        new getProblemDescription().execute(callId, CompanyID.toString());
-                                    }else{
-                                        onTaskCompleted("Internet connection failed, please check");
+                            pDialog.hide();
+                            if (jsonArray.length()!=0) {
+                                try{
+                                    JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                    Integer code = jsonObject.getInt("code");
+                                    Integer callId = jsonObject.getInt("callId");
+                                    Integer companyId = jsonObject.getInt("companyId");
+                                    if(code == 1){
+                                        getProblemDescription(callId,companyId);
+                                    }else {
+                                        getProblemDescription(callId,companyId);
+                                        Toast.makeText(getApplicationContext(),"No Change or something went wrong",Toast.LENGTH_LONG).show();
                                     }
                                 }catch (Exception e){
-                                    onTaskCompleted(e.getLocalizedMessage());
+                                    e.printStackTrace();
+                                    Toast.makeText(getApplicationContext(),""+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                                 }
 
-                            }
-                        } else {
-                            onTaskCompleted(message);
-                        }
-                    } catch (Exception e){
-                        onTaskCompleted(e.getMessage());
-                    }
-                }catch (Exception e){
-                    onTaskCompleted(e.getMessage());
-                }
-            }catch (Exception ee){
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-            Log.e("Test","test"+s);
-        }
-    }
-
-    class getProblemDescription extends  AsyncTask<String,String,String>{
-
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected String doInBackground(String... voids) {
-            String result = "";
-
-            try {
-                String SOAP_ACTION = NameSpace+"getProblemDesc";
-                SoapObject request = new SoapObject(NameSpace, "getProblemDesc");
-                request.addAttribute("companyId", voids[1]);
-                request.addAttribute("companyId2", voids[1]);
-                request.addAttribute("callId",voids[0]);
-
-
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                }
-                if (request.equals("")) {
-                    Object re = null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-            } catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-            return  result;
-        }
-
-        @Override
-        protected void onCancelled(String s) {
-            super.onCancelled(s);
-            Log.e("in cancel", s);
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.e("getDesc", s);
-            if(!s.equals("") && !s.equals(null)
-            ){
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    if(jsonArray.length()>0){
-                        for(int i = 0; i<jsonArray.length(); i++){
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            String pd = jsonObject.getString("userCallDescription");
-                            if(!pd.equals("")){
-                                pd_txt.setText(pd);
-                                btn_add_description.setEnabled(false);
                             } else {
-                                btn_add_description.setEnabled(true);
+                                Toast.makeText(getApplicationContext(),"Something went wrong",Toast.LENGTH_LONG).show();
                             }
                         }
-                    } else {
-                        Log.i("No Data"," found spinner");
-                        // onTaskCompleted("No Data found spinner");
-                    }
-                } catch (Exception ee){
-                    Log.i("No Data", " found spinner");
-                    //onTaskCompleted(ee.getLocalizedMessage());
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
                 }
-            } else {
-                Log.i("No Data", " found spinner");
-                //onTaskCompleted("Unable to get details, try gain");
-            }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
+
+    public void getProblemDescription(Integer callId, Integer companyId){
+        //GetSelectedCallByID
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("companyId", companyId);
+            Log.d("companyId", companyId.toString());
+            String url = "http://service.newpro.in/app_slim/v1/getProblemDesc?callId="+ callId +"&companyId="+ companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("get p Description", jsonArray.toString());
+
+                            pDialog.hide();
+                            if(!jsonArray.equals(null)
+                            ){
+                                try {
+                                    if(jsonArray.length()>0){
+                                        for(int i = 0; i<jsonArray.length(); i++){
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            String pd = jsonObject.getString("userCallDescription");
+                                            if(!pd.equals("")){
+                                                pd_txt.setText(pd);
+                                                btn_add_description.setEnabled(false);
+                                            } else {
+                                                btn_add_description.setEnabled(true);
+                                            }
+                                        }
+                                    } else {
+                                        Log.i("No Data"," found spinner");
+                                        // onTaskCompleted("No Data found spinner");
+                                    }
+                                } catch (Exception ee){
+                                    Log.i("No Data", " found spinner");
+                                    //onTaskCompleted(ee.getLocalizedMessage());
+                                }
+                            } else {
+                                Log.i("No Data", " found spinner");
+                                //onTaskCompleted("Unable to get details, try gain");
+                            }   }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+
     public class upLoaData extends AsyncTask<String,String, String> {
 
         String url = urlClass.getUrl();
@@ -1274,505 +1212,414 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             }
         }
     }
-    class getCallStatus extends  AsyncTask<String,String,String>{
+    public void getCallStatus(Integer companyId){
+        //GetSelectedCallByID
 
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("companyId", companyId);
+            Log.d("companyId", companyId.toString());
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
 
-        @Override
-        protected String doInBackground(String... voids) {
-            String result = "";
+            String url = "http://service.newpro.in/app_slim/v1/GetCallStatus?companyId=" + companyId;
 
-            try {
-                String SOAP_ACTION = NameSpace+"GetCallStatus";
-                SoapObject request = new SoapObject(NameSpace, "GetCallStatus");
-                request.addAttribute("companyId", CompanyID);
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                }
-                if (request.equals("")) {
-                    Object re = null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-            } catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-            return  result;
-        }
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.e("s",s);
-            if(!s.equals("") && !s.equals(null)
-            ){
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            Integer CallstatusId = jsonObject.getInt("CallstatusId");
-                            String StatusName = jsonObject.getString("StatusName");
-                            spinnerLabelList.add(StatusName);
-                            spinnerIdList.add(CallstatusId);
-                        }
-                    } else {
-                        onTaskCompleted("No Data found spinner");
-                    }
-                } catch (Exception ee){
-                    onTaskCompleted(ee.getLocalizedMessage());
-                }
-            } else{
-                onTaskCompleted("Unable to get details, try gain");
-            }
-        }
-    }
-    class getCallReason extends  AsyncTask<Integer,Integer,String>{
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("userhome", jsonArray.toString());
 
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
+                            pDialog.hide();
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected String doInBackground(Integer... voids) {
-
-            String result = "";
-
-            try {
-                Integer companyId = voids[0];
-                String SOAP_ACTION = NameSpace+"GetCallActionReasons";
-                SoapObject request = new SoapObject(NameSpace, "GetCallActionReasons");
-                request.addProperty("companyId",companyId);
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                }
-                if (request.equals("")) {
-                    Object re = null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-            } catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-            return  result;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            if(!s.equals("") && !s.equals(null)
-            ){
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            Integer CallstatusId = jsonObject.getInt("Id");
-                            String StatusName = jsonObject.getString("No");
-                            spinnerLabelListReason.add(StatusName);
-                            spinnerIdListReason.add(CallstatusId);
-                        }
-
-                    } else {
-                        onTaskCompleted("No Data found spinner");
-                    }
-                } catch (Exception ee){
-                    onTaskCompleted(ee.getLocalizedMessage());
-                }
-            } else{
-                onTaskCompleted("Unable to get details, try gain");
-            }
-
-        }
-    }
-    class getCallDetails extends AsyncTask<Integer,String,String> {
-
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        public ProgressDialog dialog =
-                new ProgressDialog(tabCallDetails.this);
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            try{
-                dialog.setMessage("Loading...");
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-            }catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
-
-            }
-        }
-
-        @Override
-        protected String doInBackground(Integer... params) {
-
-            String result = "";
-            try {
-                Integer UserID = params[0];
-                Integer callId = params[1];
-                Integer companyId = params[2];
-                String SOAP_ACTION = NameSpace+"GetSelectedCallByID";
-                SoapObject request = new SoapObject(NameSpace, "GetSelectedCallByID");
-                Log.e("UserID",UserID+"");
-                Log.e("callId",callId+"");
-                Log.e("companyId",companyId+"");
-                request.addProperty("userId",UserID);
-                request.addProperty("companyId",companyId);
-                request.addProperty("callId",callId);
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                }
-                if(request.equals("")){
-                    Object re= null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-            } catch (Exception e) {
-                System.out.println("Error"+e);
-                onTaskCompleted(e.getLocalizedMessage());
-            }
-            return result;
-
-        }
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            try{
-                dialog.dismiss();
-            }catch (Exception ee){
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-
-        }
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.e("SSS-->ss", s);
-            dialog.dismiss();
-            if(!s.equals("") && !s.equals(null)){
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
-
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            //1
-                            String callId = sharedpreferences.getString("clickedId","0");
-                            String Id = jsonObject.getString("callNo");
-                            Log.e("Id",""+Id);
-                            Log.e("callId",""+callId);
-                            try{
-                                if(Id.equals(callId)){
-                                    String CallNo = jsonObject.getString("callNo");
-                                    String Date = jsonObject.getString("callDatestr");
-                                    String ProductType = jsonObject.getString("productType");
-                                    String ProductBrand = jsonObject.getString("productNo");
-                                    String ProductNamev= jsonObject.getString("productName");
-                                    String CallDesc = jsonObject.getString("callDetails");
-                                    String CustomerName = jsonObject.getString("customerName");
-                                    String ContactNo = jsonObject.getString("customerContact");
-                                    String CustEmail = jsonObject.getString("CustEmail");
-                                    String Address = jsonObject.getString("customer_address");
-                                    selectedContract = ContactNo;
-                                    String contract_numberV = jsonObject.getString("contactNo");
-                                    String contract_typeV = jsonObject.getString("contactType");
-                                    String product_detailsV = jsonObject.getString("prodcutDetails");
-                                    String serviceTypeV = jsonObject.getString("serviceType");
-                                    String IssueTypeV = jsonObject.getString("issueType");
-                                    String IssuePriorityV = jsonObject.getString("servicePrority");
-                                    String LocationCallV = jsonObject.getString("callLocation");
-                                    String callStatus = jsonObject.getString("CallStatus");
-                                    callStatusG = callStatus;
-
-                                    if(contract_numberV.equals("") || contract_numberV.equals("0") || contract_numberV.equals(null)){
-                                        contract_numberV="NA";
+                            if(jsonArray.length()!=0 ){
+                                try {
+                                    if(jsonArray.length()>0){
+                                        for(int i=0;i<jsonArray.length();i++){
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            Integer CallstatusId = jsonObject.getInt("CallstatusId");
+                                            String StatusName = jsonObject.getString("StatusName");
+                                            spinnerLabelList.add(StatusName);
+                                            spinnerIdList.add(CallstatusId);
+                                        }
+                                    } else {
+                                        onTaskCompleted("No Data found spinner");
                                     }
-                                    if(contract_typeV.equals("") || contract_typeV.equals(null) || contract_typeV.equals("0")){
-                                        contract_typeV = "NA";
-                                    }
-                                    contract_number.setText(contract_numberV);
-                                    contract_type.setText(contract_typeV);
-
-                                    serviceType.setText(serviceTypeV);
-                                    IssueType.setText(IssueTypeV);
-                                    IssuePriority.setText(IssuePriorityV);
-                                    LocationCall.setText(LocationCallV);
-                                    call_view_issueDetails.setText(CallDesc);
-
-
-                                    if(ProductNamev.equals("") || ProductNamev.equals(null)){
-                                        ProductNamev = "NA";
-                                    }
-                                    if(ProductBrand.equals("0") || ProductBrand.equals(null) || ProductBrand.equals("")){
-                                        ProductBrand ="NA";
-                                    }
-                                    if(ProductType.equals("") || ProductType.equals(null) || ProductType.equals("0")){
-                                        ProductType = "NA";
-                                    }
-                                    if(product_detailsV.equals("") || product_detailsV.equals(null)){
-                                        product_detailsV = "NA";
-                                    }
-                                    productName.setText(ProductNamev);
-                                    call_veiw_productNumber.setText(ProductBrand);
-                                    call_veiw_productType.setText(ProductType);
-                                    product_details.setText(product_detailsV);
-
-
-                                    call_veiw_id.setText(CallNo);
-                                    call_veiw_date.setText(Date);
-//                                call_veiw_rnumber.setText(SerialNo);
-
-
-
-//2
-
-
-                                    //3
-
-
-
-                                    call_details_customerName.setText(CustomerName);
-                                    call_details_mobileNumber.setText(ContactNo);
-                                    call_details_emailId.setText(CustEmail);
-                                    call_details_customerAddress.setText(Address);
+                                } catch (Exception ee){
+                                    onTaskCompleted(ee.getLocalizedMessage());
                                 }
-                            }catch (Exception ee){
-                                onTaskCompleted(ee.getMessage());
+                            } else{
+                                onTaskCompleted("Unable to get details, try gain");
+                            }}
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+    public void get_user_chat_list(Integer callId, Integer companyId){
+        //GetSelectedCallByID
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("callId", callId);
+            jsonObject.put("companyId", companyId);
+            Log.d("companyId", companyId.toString());
+
+
+            String url = "http://service.newpro.in/app_slim/v1/GetMessage?CallId=" + callId +"&UserId=" + UserId +"&CompanyId=" + companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("getUserChat", jsonArray.toString());
+
+                            pDialog.hide();
+                            if(jsonArray.length()!=0){
+                                try {
+                                    msg_List.clear();
+                                    if(jsonArray.length()>0){
+                                        for(int i=0;i<jsonArray.length();i++){
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            //1
+                                            ChatMessage chatMessage = new ChatMessage();
+                                            try {
+                                                String UserId = jsonObject.getString("UserId");
+                                                String TimeStampStr = jsonObject.getString("TimeStampStr");
+                                                Integer db_user = Integer.parseInt(UserId);
+                                                String Text = jsonObject.getString("Text");
+                                                Log.e("logedUserID",""+logedUserID);
+                                                Log.e("db_user",""+db_user);
+                                                if(db_user.equals(logedUserID)){
+                                                    Log.e("inside","equal");
+                                                    chatMessage.setMessage(Text);
+                                                    chatMessage.setDate_time(TimeStampStr);
+                                                    chatMessage.setSide(1);
+                                                } else {
+                                                    chatMessage.setMessage(Text);
+                                                    chatMessage.setDate_time(TimeStampStr);
+                                                    chatMessage.setSide(2);
+                                                }
+                                                msg_List.add(chatMessage);
+
+                                            } catch (Exception ee){
+                                                onTaskCompleted(ee.getMessage());
+                                            }
+
+                                        }
+                                        chatArrayAdapter = new chatAdaptor(msg_List,tabCallDetails.this);
+                                        chat_message_list.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
+                                        chat_message_list.setAdapter(chatArrayAdapter);
+
+                                    } else {
+                                        Log.e("eee","No data found1111");
+                                        onTaskCompleted("No Data found");
+                                    }
+                                } catch (Exception ee){
+                                    Log.e("eee"," dd"+ee.getLocalizedMessage());
+                                    onTaskCompleted(ee.getLocalizedMessage());
+                                }
+                            } else{
+                                onTaskCompleted("No call history to show");
                             }
-
-
                         }
-                    } else {
-                        dialog.dismiss();
-                        Log.e("eee","No data found1111");
-                        onTaskCompleted("No Data found");
-                    }
-                } catch (Exception ee){
-                    dialog.dismiss();
-                    Log.e("eee"," dd"+ee.getLocalizedMessage());
-                    onTaskCompleted(ee.getLocalizedMessage());
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
                 }
-            } else{
-                dialog.dismiss();
-                Log.e("eee","No data found111"+s);
-                onTaskCompleted("Unable to get details, try gain");
-            }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
-    class update_read_status extends  AsyncTask<Integer,Integer,String>{
+    public void getCallReason(Integer companyId){
+        //GetSelectedCallByID
 
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("companyId", companyId);
+            Log.d("companyId", companyId.toString());
 
-        @Override
-        protected String doInBackground(Integer... integers) {
-            String result = "";
-            try {
-                Integer callId =   integers[0];
-                Integer companyId = integers[1];
-                String SOAP_ACTION = NameSpace+"GetMessage";
-                SoapObject request = new SoapObject(NameSpace, "GetMessage");
-                request.addProperty("callId",callId);
-                request.addProperty("companyId",companyId);
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
+
+            String url = "http://service.newpro.in/app_slim/v1/GetCallActionReasons?companyId=" + companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("userhome", jsonArray.toString());
+
+                            pDialog.hide();
+
+                            if(jsonArray.length()!=0){
+                                try {
+                                    if(jsonArray.length()>0){
+                                        for(int i=0;i<jsonArray.length();i++){
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            Integer CallstatusId = jsonObject.getInt("Id");
+                                            String StatusName = jsonObject.getString("No");
+                                            spinnerLabelListReason.add(StatusName);
+                                            spinnerIdListReason.add(CallstatusId);
+                                        }
+
+                                    } else {
+                                        onTaskCompleted("No Data found spinner");
+                                    }
+                                } catch (Exception ee){
+                                    onTaskCompleted(ee.getLocalizedMessage());
+                                }
+                            } else{
+                                onTaskCompleted("Unable to get details, try gain");
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
                 }
-                if(request.equals("")){
-                    Object re= null;
-                    re = envelope.getResponse();
-                    return re.toString();
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
                 }
-            } catch (Exception e) {
-                System.out.println("Error"+e);
-                onTaskCompleted(e.getLocalizedMessage());
-            }
-            return result;
 
-        }
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
 
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-        }
+                    return headers;
+                }
+            };
 
-        @Override
-        protected void onPostExecute(String integer) {
-            super.onPostExecute(integer);
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
+    public void getCallDetails(Integer UserID, Integer companyId,Integer callId){
+        //GetSelectedCallByID
 
-    class get_user_chat_list extends AsyncTask<String,Setting,String>
-    {
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        public ProgressDialog dialog =
-                new ProgressDialog(tabCallDetails.this);
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            try{
-                dialog.setMessage("Loading...");
-                dialog.setCanceledOnTouchOutside(false);
-                dialog.show();
-            }catch (Exception ee){
-                onTaskCompleted(ee.getLocalizedMessage());
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", UserID);
+            jsonObject.put("companyId", companyId);
+            jsonObject.put("callId", callId);
+            Log.d("companyId", companyId.toString());
 
-            }
-        }
 
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            try {
-                dialog.dismiss();
-            } catch (Exception ee){
-                Log.e("eee"," dd"+ee.getLocalizedMessage());
-                onTaskCompleted(ee.getLocalizedMessage());
-            }
-        }
-        @Override
-        protected String doInBackground(String... strings) {
-            String result = "";
-            try {
-                String callId =   strings[0];
-                String companyId = strings[1];
-                String SOAP_ACTION = NameSpace+"GetMessage";
-                SoapObject request = new SoapObject(NameSpace, "GetMessage");
-                request.addProperty("callId",callId);
-                request.addProperty("companyId",companyId);
-                SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-                envelope.setOutputSoapObject(request);
-                envelope.dotNet = true;
-                HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-                androidHttpTransport.call(SOAP_ACTION, envelope);
-                if(envelope.bodyIn instanceof SoapFault){
-                    String str= ((SoapFault) envelope.bodyIn).faultstring;
-                    Log.e("eeeee", str);
-                } else {
-                    result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                }
-                if(request.equals("")){
-                    Object re= null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-            } catch (Exception e) {
-                System.out.println("Error"+e);
-              //  onTaskCompleted(e.getLocalizedMessage());
-                result ="";
-            }
-            return result;
+            String url = "http://service.newpro.in/app_slim/v1/GetSelectedCallByID?callId="+callId +"&companyId=" + companyId;
 
-        }
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            dialog.dismiss();
-            if(!s.equals("") && !s.equals(null)){
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    msg_List.clear();
-                    if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            //1
-                            ChatMessage chatMessage = new ChatMessage();
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Call Details", jsonArray.toString());
+
+                            pDialog.hide();
                             try {
-                                String UserId = jsonObject.getString("UserId");
-                                String TimeStampStr = jsonObject.getString("TimeStampStr");
-                                Integer db_user = Integer.parseInt(UserId);
-                                String Text = jsonObject.getString("Text");
-                                Log.e("logedUserID",""+logedUserID);
-                                Log.e("db_user",""+db_user);
-                                if(db_user.equals(logedUserID)){
-                                    Log.e("inside","equal");
-                                    chatMessage.setMessage(Text);
-                                    chatMessage.setDate_time(TimeStampStr);
-                                    chatMessage.setSide(1);
+                                if(jsonArray.length()>0){
+                                    for(int i=0;i<jsonArray.length();i++){
+
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        //1
+                                        String callId = sharedpreferences.getString("clickedId","0");
+                                        String Id = jsonObject.getString("callNo");
+                                        Log.e("Id",""+Id);
+                                        Log.e("callId",""+callId);
+                                        try{
+                                            if(Id.equals(callId)){
+                                                String CallNo = jsonObject.getString("callNo");
+                                                String Date = jsonObject.getString("callDatestr");
+                                                String ProductType = jsonObject.getString("productType");
+                                                String ProductBrand = jsonObject.getString("productNo");
+                                                String ProductNamev= jsonObject.getString("productName");
+                                                String CallDesc = jsonObject.getString("callDetails");
+                                                String CustomerName = jsonObject.getString("customerName");
+                                                String ContactNo = jsonObject.getString("customerContact");
+                                                String CustEmail = jsonObject.getString("CustEmail");
+                                                String Address = jsonObject.getString("Address");
+                                                selectedContract = ContactNo;
+                                                String contract_numberV = jsonObject.getString("contactNo");
+                                                String contract_typeV = jsonObject.getString("contactType");
+                                                String product_detailsV = jsonObject.getString("prodcutDetails");
+                                                String serviceTypeV = jsonObject.getString("serviceType");
+                                                String IssueTypeV = jsonObject.getString("issueType");
+                                                String IssuePriorityV = jsonObject.getString("servicePrority");
+                                                String LocationCallV = jsonObject.getString("callLocation");
+                                                String callStatus = jsonObject.getString("CallStatus");
+                                                callStatusG = callStatus;
+
+                                                if(contract_numberV.equals("") || contract_numberV.equals("0") || contract_numberV.equals(null)){
+                                                    contract_numberV="NA";
+                                                }
+                                                if(contract_typeV.equals("") || contract_typeV.equals(null) || contract_typeV.equals("0")){
+                                                    contract_typeV = "NA";
+                                                }
+                                                contract_number.setText(contract_numberV);
+                                                contract_type.setText(contract_typeV);
+
+                                                serviceType.setText(serviceTypeV);
+                                                IssueType.setText(IssueTypeV);
+                                                IssuePriority.setText(IssuePriorityV);
+                                                LocationCall.setText(LocationCallV);
+                                                call_view_issueDetails.setText(CallDesc);
+
+
+                                                if(ProductNamev.equals("") || ProductNamev.equals(null)){
+                                                    ProductNamev = "NA";
+                                                }
+                                                if(ProductBrand.equals("0") || ProductBrand.equals(null) || ProductBrand.equals("")){
+                                                    ProductBrand ="NA";
+                                                }
+                                                if(ProductType.equals("") || ProductType.equals(null) || ProductType.equals("0")){
+                                                    ProductType = "NA";
+                                                }
+                                                if(product_detailsV.equals("") || product_detailsV.equals(null)){
+                                                    product_detailsV = "NA";
+                                                }
+                                                productName.setText(ProductNamev);
+                                                call_veiw_productNumber.setText(ProductBrand);
+                                                call_veiw_productType.setText(ProductType);
+                                                product_details.setText(product_detailsV);
+
+
+                                                call_veiw_id.setText(CallNo);
+                                                call_veiw_date.setText(Date);
+                                                call_details_customerName.setText(CustomerName);
+                                                call_details_mobileNumber.setText(ContactNo);
+                                                call_details_emailId.setText(CustEmail);
+                                                call_details_customerAddress.setText(Address);
+                                            }
+                                        }catch (Exception ee){
+                                            onTaskCompleted(ee.getMessage());
+                                        }
+
+
+                                    }
                                 } else {
-                                    chatMessage.setMessage(Text);
-                                    chatMessage.setDate_time(TimeStampStr);
-                                    chatMessage.setSide(2);
+                                    Log.e("eee","No data found1111");
+                                    onTaskCompleted("No Data found");
                                 }
-                                msg_List.add(chatMessage);
-
                             } catch (Exception ee){
-                                onTaskCompleted(ee.getMessage());
+                                Log.e("eee"," dd"+ee.getLocalizedMessage());
+                                onTaskCompleted(ee.getLocalizedMessage());
                             }
-
                         }
-                        chatArrayAdapter = new chatAdaptor(msg_List,tabCallDetails.this);
-                        chat_message_list.setTranscriptMode(AbsListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
-                        chat_message_list.setAdapter(chatArrayAdapter);
+                    }, new Response.ErrorListener() {
 
-                    } else {
-                        dialog.dismiss();
-                        Log.e("eee","No data found1111");
-                        onTaskCompleted("No Data found");
-                    }
-                } catch (Exception ee){
-                    dialog.dismiss();
-                    Log.e("eee"," dd"+ee.getLocalizedMessage());
-                    onTaskCompleted(ee.getLocalizedMessage());
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
                 }
-            } else{
-                dialog.dismiss();
-                Log.e("eee","No data found111"+s);
-                onTaskCompleted("Unable to get details, try gain");
-            }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
 
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
 

@@ -36,6 +36,15 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.kobjects.util.Util;
@@ -47,6 +56,8 @@ import org.ksoap2.transport.HttpTransportSE;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class userHome extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ontaskComplet {
@@ -249,7 +260,7 @@ public class userHome extends AppCompatActivity
                         try{
                             checkInternet = urlClass.checkInternet();
                             if(checkInternet){
-                                new loadUSerDashboard().execute(UserID,CompanyID);
+                                loadUSerDashboard(UserID,CompanyID);
                             } else{
                                 onTaskCompleted("Internet connection failed, please check");
                             }
@@ -274,7 +285,75 @@ public class userHome extends AppCompatActivity
                 Log.e("userId",""+userId);
                 Log.e("companyId",""+companyId);
                 if(checkInternet){
-                    new get_eng_info().execute(userId.toString(),companyId.toString());
+                   // new get_eng_info().execute(userId.toString(),companyId.toString());
+                    final ProgressDialog pDialog = new ProgressDialog(this);
+                    pDialog.setMessage("Loading...");
+                    pDialog.show();
+                    try{
+
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("userId", userId);
+                        jsonObject.put("companyId", companyId);
+
+
+                        String url = "http://service.newpro.in/app_slim/v1/EngineerProfile?" +"userId=" + userId +"&companyId=" + companyId;
+
+                        JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                                url,null,
+                                new Response.Listener<JSONArray>() {
+
+                                    @Override
+                                    public void onResponse(JSONArray jsonArray) {
+                                        Log.d("Login", jsonArray.toString());
+                                        pDialog.hide();
+                                        try {
+                                            JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                            String name = jsonObject.getString("Name");
+                                            String email = jsonObject.getString("EmailId");
+                                            String phoneNo = jsonObject.getString("PhoneNo");
+                                            String Location = jsonObject.getString("Location");
+                                            TextView login_name_txt = (TextView) findViewById(R.id.login_name);
+                                            login_name_txt.setText(name);
+                                            cmp.setText(name);
+                                        } catch (Exception ee){
+                                            ee.printStackTrace();
+                                            Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+                                }, new Response.ErrorListener() {
+
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                VolleyLog.d("Login", "Error: " + error.getMessage());
+                                Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                                pDialog.hide();
+                            }
+                        }){
+                            @Override
+                            public Request.Priority getPriority() {
+                                return Priority.IMMEDIATE;
+                            }
+
+                            @Override
+                            public Map<String, String> getHeaders() throws AuthFailureError {
+                                HashMap<String, String> headers = new HashMap<String, String>();
+                                headers.put("Content-Type", "application/json; charset=utf-8");
+
+                                return headers;
+                            }
+                        };
+
+
+// Adding request to request queue
+
+                        //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+                        RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+                        queue.add(jsonObjReq);
+                    }catch (Exception e){
+                        pDialog.hide();
+                        e.printStackTrace();
+                        Toast.makeText(userHome.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                    }
                 } else {
                     onTaskCompleted("Internet connection failed, please check");
                 }
@@ -302,7 +381,7 @@ public class userHome extends AppCompatActivity
                 Log.e("UserID",""+UserID);
                 try{
                     if(checkInternet){
-                        new loadUSerDashboard().execute(UserID,CompanyID);
+                        loadUSerDashboard(UserID,CompanyID);
                         Date currentTime = Calendar.getInstance().getTime();
                         Intent ll24 = new Intent(getApplicationContext(), AlarmReceiverLifeLog.class);
                         PendingIntent recurringLl24 = PendingIntent.getBroadcast(getApplicationContext(), 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -662,134 +741,253 @@ public class userHome extends AppCompatActivity
             }
         }
     }
-    class loadUSerDashboard extends AsyncTask<Integer,String,String>{
-        String url = urlClass.getUrl();
-        String NameSpace = urlClass.NameSpace();
-        public ProgressDialog dialog =
-                new ProgressDialog(userHome.this);
+    public void loadUSerDashboard(Integer UserID, Integer companyId){
+        //EngineerDashBoard
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", UserID);
+            jsonObject.put("companyId", companyId);
+            Log.d("companyId", companyId.toString());
 
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            dialog.setMessage("Loading...");
-            dialog.setCanceledOnTouchOutside(false);
-            dialog.show();
-        }
-        @Override
-        protected String doInBackground(Integer... params) {
+            String url = "http://service.newpro.in/app_slim/v1/EngineerDashBoard?" +"userId=" + UserID +"&companyId=" + companyId;
 
-            String result = "";
-            Integer UserID = params[0];
-            Integer companyId = params[1];
-            String SOAP_ACTION = NameSpace+"EngineerDashBoard";
-            SoapObject request = new SoapObject(NameSpace, "EngineerDashBoard");
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
 
-            request.addProperty("userId",UserID);
-            request.addProperty("companyId",companyId);
-            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
-            envelope.setOutputSoapObject(request);
-            envelope.dotNet = true;
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("userhome", jsonArray.toString());
 
-            HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
-            try {
-                androidHttpTransport.call(SOAP_ACTION, envelope);
+                            pDialog.hide();
+                            try {
+                              //  JSONArray jsonArray = new JSONArray(jsonObject1.toString());
+                                if(jsonArray.length()>0){
+                                    for(int i=0;i<jsonArray.length();i++){
 
-                result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
-                if(request.equals("")){
-                    Object re= null;
-                    re = envelope.getResponse();
-                    return re.toString();
-                }
-                return  result;
-            } catch (Exception e) {
-                System.out.println("Error"+e);
-                onTaskCompleted(e.getLocalizedMessage());
-            }
-            return result;
-        }
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        String Status = jsonObject.getString("Status");
+                                        String Calls = jsonObject.getString("Calls");
+                                        String Read = jsonObject.getString("Read");
+                                        TextView callAlert;
+                                        if(Status.equals("Forward")){
+                                            TextView newCall = (TextView) findViewById(R.id.new_call);
+                                            newCall.setText(Calls);
+                                            callAlert = (TextView) findViewById(R.id.new_call_count);
+                                            if(Read.equals("0")){
+                                                //  callAlert.setVisibility(View.GONE);
+                                            } else {
+                                                callAlert.setVisibility(View.VISIBLE);
+                                                callAlert.setText(Read);
+                                            }
+                                        }
+                                        if(Status.equals("Open")){
+                                            TextView open_call = (TextView) findViewById(R.id.open_call);
+                                            open_call.setText(Calls);
+                                            callAlert = (TextView) findViewById(R.id.new_open_count);
+                                            if(Read.equals("0")){
+                                                //callAlert.setVisibility(View.GONE);
+                                            } else {
+                                                callAlert.setVisibility(View.VISIBLE);
+                                                callAlert.setText(Read);
+                                            }
+                                        }
+                                        if(Status.equals("Partially Resolved")){
 
-        @Override
-        protected void onCancelled() {
-            super.onCancelled();
-            dialog.dismiss();
-            onTaskCompleted(" Unable to connect server");
-        }
+                                            TextView closed_call = (TextView) findViewById(R.id.closed_call);
+                                            closed_call.setText(Calls);
 
-        @Override
-        protected void onCancelled(String s) {
-            super.onCancelled(s);
-            onTaskCompleted(" Unable to connect server");
-        }
+                                        }
+                                        if(Status.equals("Pending")){
+                                            TextView pending_call = (TextView) findViewById(R.id.pending_call);
+                                            pending_call.setText(Calls);
+                                            callAlert = (TextView) findViewById(R.id.new_pending_count);
+                                            if(Read.equals("0")){
+                                                //callAlert.setVisibility(View.GONE);
+                                            } else {
+                                                callAlert.setVisibility(View.VISIBLE);
+                                                callAlert.setText(Read);
+                                            }
+                                        }
+                                    }
 
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            dialog.dismiss();
-            if(!s.equals("") && !s.equals(null)){
-
-                try {
-                    JSONArray jsonArray = new JSONArray(s);
-                    if(jsonArray.length()>0){
-                        for(int i=0;i<jsonArray.length();i++){
-
-                            JSONObject jsonObject = jsonArray.getJSONObject(i);
-                            String Status = jsonObject.getString("Status");
-                            String Calls = jsonObject.getString("Calls");
-                            String Read = jsonObject.getString("Read");
-                            TextView callAlert;
-                            if(Status.equals("Forward")){
-                                TextView newCall = (TextView) findViewById(R.id.new_call);
-                                newCall.setText(Calls);
-                                callAlert = (TextView) findViewById(R.id.new_call_count);
-                                if(Read.equals("0")){
-                                    //  callAlert.setVisibility(View.GONE);
                                 } else {
-                                    callAlert.setVisibility(View.VISIBLE);
-                                    callAlert.setText(Read);
+                                    onTaskCompleted(" No Data found");
                                 }
+                            } catch (Exception ee){
+                                ee.printStackTrace();
+                                onTaskCompleted(ee.getLocalizedMessage());
                             }
-                            if(Status.equals("Open")){
-                                TextView open_call = (TextView) findViewById(R.id.open_call);
-                                open_call.setText(Calls);
-                                callAlert = (TextView) findViewById(R.id.new_open_count);
-                                if(Read.equals("0")){
-                                    //callAlert.setVisibility(View.GONE);
-                                } else {
-                                    callAlert.setVisibility(View.VISIBLE);
-                                    callAlert.setText(Read);
-                                }
-                            }
-                            if(Status.equals("Partially Resolved")){
 
-                                TextView closed_call = (TextView) findViewById(R.id.closed_call);
-                                closed_call.setText(Calls);
 
-                            }
-                            if(Status.equals("Pending")){
-                                TextView pending_call = (TextView) findViewById(R.id.pending_call);
-                                pending_call.setText(Calls);
-                                callAlert = (TextView) findViewById(R.id.new_pending_count);
-                                if(Read.equals("0")){
-                                    //callAlert.setVisibility(View.GONE);
-                                } else {
-                                    callAlert.setVisibility(View.VISIBLE);
-                                    callAlert.setText(Read);
-                                }
-                            }
                         }
+                    }, new Response.ErrorListener() {
 
-                    } else {
-                        onTaskCompleted(" No Data found");
-                    }
-                } catch (Exception ee){
-                    onTaskCompleted(ee.getLocalizedMessage());
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
                 }
 
-            } else{
-                onTaskCompleted(" Unable to get details, try gain");
-            }
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(userHome.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
+//    class loadUSerDashboard extends AsyncTask<Integer,String,String>{
+//        String url = urlClass.getUrl();
+//        String NameSpace = urlClass.NameSpace();
+//        public ProgressDialog dialog =
+//                new ProgressDialog(userHome.this);
+//
+//
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            dialog.setMessage("Loading...");
+//            dialog.setCanceledOnTouchOutside(false);
+//            dialog.show();
+//        }
+//        @Override
+//        protected String doInBackground(Integer... params) {
+//
+//            String result = "";
+//            Integer UserID = params[0];
+//            Integer companyId = params[1];
+//            String SOAP_ACTION = NameSpace+"EngineerDashBoard";
+//            SoapObject request = new SoapObject(NameSpace, "EngineerDashBoard");
+//
+//            request.addProperty("userId",UserID);
+//            request.addProperty("companyId",companyId);
+//            SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
+//            envelope.setOutputSoapObject(request);
+//            envelope.dotNet = true;
+//
+//            HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
+//            try {
+//                androidHttpTransport.call(SOAP_ACTION, envelope);
+//
+//                result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
+//                if(request.equals("")){
+//                    Object re= null;
+//                    re = envelope.getResponse();
+//                    return re.toString();
+//                }
+//                return  result;
+//            } catch (Exception e) {
+//                System.out.println("Error"+e);
+//                onTaskCompleted(e.getLocalizedMessage());
+//            }
+//            return result;
+//        }
+//
+//        @Override
+//        protected void onCancelled() {
+//            super.onCancelled();
+//            dialog.dismiss();
+//            onTaskCompleted(" Unable to connect server");
+//        }
+//
+//        @Override
+//        protected void onCancelled(String s) {
+//            super.onCancelled(s);
+//            onTaskCompleted(" Unable to connect server");
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String s) {
+//            super.onPostExecute(s);
+//            dialog.dismiss();
+//            if(!s.equals("") && !s.equals(null)){
+//
+//                try {
+//                    JSONArray jsonArray = new JSONArray(s);
+//                    if(jsonArray.length()>0){
+//                        for(int i=0;i<jsonArray.length();i++){
+//
+//                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                            String Status = jsonObject.getString("Status");
+//                            String Calls = jsonObject.getString("Calls");
+//                            String Read = jsonObject.getString("Read");
+//                            TextView callAlert;
+//                            if(Status.equals("Forward")){
+//                                TextView newCall = (TextView) findViewById(R.id.new_call);
+//                                newCall.setText(Calls);
+//                                callAlert = (TextView) findViewById(R.id.new_call_count);
+//                                if(Read.equals("0")){
+//                                    //  callAlert.setVisibility(View.GONE);
+//                                } else {
+//                                    callAlert.setVisibility(View.VISIBLE);
+//                                    callAlert.setText(Read);
+//                                }
+//                            }
+//                            if(Status.equals("Open")){
+//                                TextView open_call = (TextView) findViewById(R.id.open_call);
+//                                open_call.setText(Calls);
+//                                callAlert = (TextView) findViewById(R.id.new_open_count);
+//                                if(Read.equals("0")){
+//                                    //callAlert.setVisibility(View.GONE);
+//                                } else {
+//                                    callAlert.setVisibility(View.VISIBLE);
+//                                    callAlert.setText(Read);
+//                                }
+//                            }
+//                            if(Status.equals("Partially Resolved")){
+//
+//                                TextView closed_call = (TextView) findViewById(R.id.closed_call);
+//                                closed_call.setText(Calls);
+//
+//                            }
+//                            if(Status.equals("Pending")){
+//                                TextView pending_call = (TextView) findViewById(R.id.pending_call);
+//                                pending_call.setText(Calls);
+//                                callAlert = (TextView) findViewById(R.id.new_pending_count);
+//                                if(Read.equals("0")){
+//                                    //callAlert.setVisibility(View.GONE);
+//                                } else {
+//                                    callAlert.setVisibility(View.VISIBLE);
+//                                    callAlert.setText(Read);
+//                                }
+//                            }
+//                        }
+//
+//                    } else {
+//                        onTaskCompleted(" No Data found");
+//                    }
+//                } catch (Exception ee){
+//                    onTaskCompleted(ee.getLocalizedMessage());
+//                }
+//
+//            } else{
+//                onTaskCompleted(" Unable to get details, try gain");
+//            }
+//        }
+//    }
 
 }

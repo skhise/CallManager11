@@ -22,6 +22,14 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
@@ -30,7 +38,9 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class pendingCall extends AppCompatActivity implements ontaskComplet,SearchView.OnQueryTextListener {
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
@@ -99,7 +109,9 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                 try{
                     checkInternet= urlClass.checkInternet();
                     if (checkInternet){
-                        new loadPendingCall().execute(UserID,CompanyID);
+                        //new loadPendingCall().execute(UserID,CompanyID);
+                        loadPendingCall(UserID,CompanyID);
+
                     }else {
                         onTaskCompleted("Internet connection failed, please check");
                     }
@@ -125,7 +137,8 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                             checkInternet= urlClass.checkInternet();
                             if (checkInternet){
                                 contactList.clear();
-                                new loadPendingCall().execute(UserID,CompanyID);
+                               // new loadPendingCall().execute(UserID,CompanyID);
+                                loadPendingCall(UserID,CompanyID);
                             }else {
                                 onTaskCompleted("Internet connection failed, please check");
                             }
@@ -190,6 +203,136 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
         super.onBackPressed();
         finish();
         startActivity(new Intent(pendingCall.this,userHome.class));
+    }
+    public void loadPendingCall(Integer UserId, Integer companyId){
+        //GetSelectedCallByID
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            Integer statusId = 5;
+            final String url = "http://service.newpro.in/app_slim/v1/GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Resolved Call", jsonArray.toString()+" url:"+url);
+
+                            pDialog.hide();
+                            try {
+                                if(jsonArray.length()>0){
+                                    try{
+                                        for(int i=0;i<jsonArray.length();i++){
+                                            JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                            String CallNo = jsonObject.getString("CallNo");
+                                            String Date = jsonObject.getString("CallDatestr");
+                                            String CustomerName = jsonObject.getString("CustomerName");
+                                            String CallStatusName = jsonObject.getString("CallStatusName");
+                                            String system_call_id = jsonObject.getString("Id");
+                                            String UnreadMessages = jsonObject.getString("UnreadMessages");
+                                            String callLife = jsonObject.getString("callAlive");
+                                            String time = jsonObject.getString("modifyAt");
+                                            if(CallStatusName.equals("Pending")) {
+                                                try {
+                                                    Contact pendingContact = new Contact();
+                                                    pendingContact.setCustomer_name(CustomerName);
+                                                    pendingContact.setDate_time(Date);
+                                                    pendingContact.setCall_id(CallNo);
+                                                    pendingContact.setService_type("");
+                                                    pendingContact.setSystem_call_id(system_call_id);
+                                                    pendingContact.setUnreadMessages(Integer.parseInt(UnreadMessages));
+                                                    pendingContact.setCallAlive(callLife);
+                                                    pendingContact.setActionTime(Integer.parseInt(time));
+                                                    contactList.add(pendingContact);
+                                                } catch (Exception e) {
+                                                    Log.e("displayCountryList: ",e.getLocalizedMessage()+"time:"+time);
+                                                    onTaskCompleted(e.getLocalizedMessage());
+                                                }
+                                            }
+                                        }
+                                    } catch (Exception ee){
+                                        onTaskCompleted(ee.getLocalizedMessage());
+                                    }
+                                    pending_listView.setAdapter(adapter);
+                                    try{
+                                        pending_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                            @Override
+                                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                                try{
+                                                    String callId = contactList.get(position).getCall_id();
+                                                    SharedPreferences.Editor editor =sharedpreferences.edit();
+                                                    editor.putInt("ActivityCode",3);
+                                                    editor.putString("clickedId",callId);
+                                                    editor.putInt("callId",Integer.parseInt(callId));
+                                                    editor.apply();
+                                                    editor.commit();
+                                                    try {
+                                                        checkInternet = urlClass.checkInternet();
+                                                        if (checkInternet) {
+                                                            Intent callDetails = new Intent(pendingCall.this, tabCallDetails.class);
+                                                            callDetails.putExtra("activity_name", "Pending Call View");
+                                                            startActivity(callDetails);
+                                                            finish();
+                                                        }else {
+                                                            onTaskCompleted("Internet connection failed, please check");
+                                                        }
+                                                    }catch (Exception e){
+                                                        onTaskCompleted(e.getLocalizedMessage());
+                                                    }
+                                                }catch (Exception ee){
+                                                    onTaskCompleted(ee.getLocalizedMessage());
+                                                }
+
+                                            }
+                                        });
+                                    }catch (Exception ee){
+                                        onTaskCompleted(ee.getLocalizedMessage());
+                                    }
+
+                                } else {
+                                    onTaskCompleted("No Data found");
+                                }
+                            } catch (Exception ee){
+                                onTaskCompleted(ee.getLocalizedMessage());
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(pendingCall.this,"pendingCall:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
     }
     class loadPendingCall extends AsyncTask<Integer,String,String> {
 
