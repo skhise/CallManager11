@@ -255,9 +255,10 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
                                     open_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                         @Override
                                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                            String callId = contactList.get(position).getCall_id();
+                                            String callId = contactList.get(position).getSystem_call_id();
                                             SharedPreferences.Editor editor =sharedpreferences.edit();
                                             editor.putInt("ActivityCode",2);
+                                            editor.remove("clickedId");
                                             editor.putString("clickedId",callId);
                                             editor.putInt("callId",Integer.parseInt(callId));
                                             editor.apply();

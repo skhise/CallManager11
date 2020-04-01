@@ -263,9 +263,10 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                             @Override
                                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                                 try{
-                                                    String callId = contactList.get(position).getCall_id();
+                                                    String callId = contactList.get(position).getSystem_call_id();
                                                     SharedPreferences.Editor editor =sharedpreferences.edit();
                                                     editor.putInt("ActivityCode",3);
+                                                    editor.remove("clickedId");
                                                     editor.putString("clickedId",callId);
                                                     editor.putInt("callId",Integer.parseInt(callId));
                                                     editor.apply();

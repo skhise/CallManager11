@@ -118,7 +118,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
         CompanyID    = sharedpreferences.getInt(CompanyId,0);
         UuserRole    = sharedpreferences.getInt(USERROLE,0);
         IsUseractive = sharedpreferences.getBoolean(IsUserActive,false);
-        final String clickedId = sharedpreferences.getString("clickedId","0");
+        final String clickedId = sharedpreferences.getString("clickedCallId","0");
         urlClass = new UrlClass(newCallDetails.this);
         checkInternet = urlClass.checkInternet();
         try{
@@ -128,7 +128,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                     if(checkInternet){
                         Integer cId = Integer.parseInt(clickedId);
                        // new getCallDetails().execute(cId,CompanyID,logedUserID);
-                        getCallDetails(cId,CompanyID,logedUserID);
+                        getCallDetails(logedUserID,CompanyID,cId);
                     } else {
                         onTaskCompleted("Internet connection failed, please check");
                     }
@@ -168,7 +168,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                         checkInternet = urlClass.checkInternet();
                         if(checkInternet){
                             //new rejectCall().execute(clickedId);
-                            rejectCall(clickedId,CompanyId,logedUserID+"",UuserRole+"");
+                            rejectCall(clickedId,CompanyID+"",logedUserID+"",UuserRole+"");
                         } else {
                             onTaskCompleted("Internet connection failed, please check");
                         }
@@ -193,14 +193,14 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
                 try{
-                    String clickedId = sharedpreferences.getString("clickedId","0");
+                    String clickedId = sharedpreferences.getString("clickedCallId","0");
                     if((clickedId!=null|| clickedId!="0") && (CompanyID!=null || CompanyID!=0)){
                         try{
                             checkInternet = urlClass.checkInternet();
                             if(checkInternet){
                                 Integer cId = Integer.parseInt(clickedId);
                                 //new getCallDetails().execute(cId,CompanyID,logedUserID);
-                                getCallDetails(cId,CompanyID,logedUserID);
+                                getCallDetails(logedUserID,CompanyID,cId);
                             } else {
                                 onTaskCompleted("Internet connection failed, please check");
                             }
@@ -217,10 +217,11 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             }
         });
     }
-    public void getCallDetails(Integer UserID, Integer companyId,Integer callId){
+    public void getCallDetails(Integer UserID, Integer companyId,final Integer callId){
         //GetSelectedCallByID
 
         try{
+            //Toast.makeText(this, "Get Details  "+callId, Toast.LENGTH_LONG ).show();
             final ProgressDialog pDialog = new ProgressDialog(this);
             pDialog.setMessage("Loading...");
             pDialog.show();
@@ -247,11 +248,11 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                                     for(int i=0;i<jsonArray.length();i++){
                                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                                         //1
-                                        String callId = sharedpreferences.getString("clickedId","0");
-                                        String Id = jsonObject.getString("callNo");
+                                      //  String callId = sharedpreferences.getString("clickeCalldId","0");
+                                        String Id = jsonObject.getString("Id");
                                         Log.e("Id",""+Id);
                                         Log.e("callId",""+callId);
-                                        if(Id.equals(callId)){
+                                        if(Id.equals(callId.toString())){
                                             String CallNo = jsonObject.getString("callNo");
                                             String Date = jsonObject.getString("callDatestr");
                                             String SerialNo = jsonObject.getString("contactNo");
@@ -320,6 +321,10 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                                             call_details_mobileNumber.setText(ContactNo);
                                             call_details_emailId.setText(CustEmail);
                                             call_details_customerAddress.setText(Address);
+                                        } else {
+                                            Log.e("Id",""+Id);
+                                            Log.e("callId",""+callId);
+                                            onTaskCompleted("No Data found Id:"+Id+",  callId"+callId);
                                         }
                                     }
                                 } else {
@@ -420,7 +425,9 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
         Toast.makeText(getApplicationContext(), "Response"+response, Toast.LENGTH_LONG).show();
     }
     void rejectCall(String clickedId,String companyId,String logedUserID,String userRole){
+
         try{
+            //Toast.makeText(this, "clickedId:"+clickedId, Toast.LENGTH_SHORT).show();
             final ProgressDialog pDialog = new ProgressDialog(this);
             pDialog.setMessage("Loading...");
             pDialog.show();
@@ -430,7 +437,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             jsonObject.put("callId", clickedId);
             jsonObject.put("userRole", userRole);
             Log.d("companyId", companyId.toString());
-            String url = "http://service.newpro.in/app_slim/v1/RejectCall?userRole="+userRole+"&callId="+clickedId +"&companyId=" + companyId+"&userId="+logedUserID+"";
+            String url = "http://service.newpro.in/app_slim/v1/RejectCall?userRole="+userRole+"&callId="+clickedId +"&companyId="+companyId+"&userId="+logedUserID+"";
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,
                     new Response.Listener<JSONArray>() {
@@ -440,7 +447,20 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                             Log.d("Call Details", jsonArray.toString());
 
                             pDialog.hide();
-
+                            try{
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                //String sub = s.substring(1,s.length()-1);
+                                String code = jsonObject.getString("code");
+                                String message = jsonObject.getString("message");
+                                if(code.equals("1")){
+                                    onTaskCompleted("Call rejected");
+                                    startActivity(new Intent(newCallDetails.this, userHome.class));
+                                } else {
+                                    onTaskCompleted("Error:"+message);
+                                }
+                            }catch (Exception e){
+                                onTaskCompleted(e.getMessage());
+                            }
                         }
                     }, new Response.ErrorListener() {
 
@@ -478,6 +498,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
     }
     void acceptCall(String clickedId,String companyId,String logedUserID,String userRole){
         try{
+            //Toast.makeText(this, "clickedId:"+clickedId, Toast.LENGTH_SHORT).show();
             final ProgressDialog pDialog = new ProgressDialog(this);
             pDialog.setMessage("Loading...");
             pDialog.show();
@@ -500,92 +521,20 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
 
                             pDialog.hide();
                             try {
-                                if(jsonArray.length()>0){
-                                    for(int i=0;i<jsonArray.length();i++){
-                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                        //1
-                                        String callId = sharedpreferences.getString("clickedId","0");
-                                        String Id = jsonObject.getString("callNo");
-                                        Log.e("Id",""+Id);
-                                        Log.e("callId",""+callId);
-                                        if(Id.equals(callId)){
-                                            String CallNo = jsonObject.getString("callNo");
-                                            String Date = jsonObject.getString("callDatestr");
-                                            String SerialNo = jsonObject.getString("contactNo");
-                                            String ProductType = jsonObject.getString("productType");
-                                            String ProductBrand = jsonObject.getString("productNo");
-                                            String ProductNamev= jsonObject.getString("productName");
-                                            String CallDesc = jsonObject.getString("callDetails");
-                                            String CustomerName = jsonObject.getString("customerName");
-                                            String ContactNo = jsonObject.getString("customerContact");
-                                            String CustEmail = jsonObject.getString("CustEmail");
-                                            String Address = jsonObject.getString("customer_address");
 
-                                            String contract_numberV = jsonObject.getString("contactNo");
-                                            String contract_typeV = jsonObject.getString("contactType");
-                                            String product_detailsV = jsonObject.getString("prodcutDetails");
-                                            String serviceTypeV = jsonObject.getString("serviceType");
-                                            String IssueTypeV = jsonObject.getString("issueType");
-                                            String IssuePriorityV = jsonObject.getString("servicePrority");
-                                            String LocationCallV = jsonObject.getString("callLocation");
-
-                                            if(contract_numberV.equals("") || contract_numberV.equals("0") || contract_numberV.equals(null)){
-                                                contract_numberV="NA";
-                                            }
-                                            if(contract_typeV.equals("") || contract_typeV.equals(null) || contract_typeV.equals("0")){
-                                                contract_typeV = "NA";
-                                            }
-                                            contract_number.setText(contract_numberV);
-                                            contract_type.setText(contract_typeV);
-                                            serviceType.setText(serviceTypeV);
-                                            IssueType.setText(IssueTypeV);
-                                            IssuePriority.setText(IssuePriorityV);
-                                            LocationCall.setText(LocationCallV);
-                                            call_view_issueDetails.setText(CallDesc);
-                                            if(ProductNamev.equals("") || ProductNamev.equals(null)){
-                                                ProductNamev = "NA";
-                                            }
-                                            if(ProductBrand.equals("0") || ProductBrand.equals(null) || ProductBrand.equals("")){
-                                                ProductBrand ="NA";
-                                            }
-                                            if(ProductType.equals("") || ProductType.equals(null) || ProductType.equals("0")){
-                                                ProductType = "NA";
-                                            }
-                                            if(product_detailsV.equals("") || product_detailsV.equals(null)){
-                                                product_detailsV = "NA";
-                                            }
-                                            productName.setText(ProductNamev);
-                                            call_veiw_productNumber.setText(ProductBrand);
-                                            call_veiw_productType.setText(ProductType);
-                                            product_details.setText(product_detailsV);
-
-
-                                            call_veiw_id.setText(CallNo);
-                                            call_veiw_date.setText(Date);
-//                                call_veiw_rnumber.setText(SerialNo);
-
-
-
-//2
-
-
-                                            //3
-
-
-
-                                            call_details_customerName.setText(CustomerName);
-                                            call_details_mobileNumber.setText(ContactNo);
-                                            call_details_emailId.setText(CustEmail);
-                                            call_details_customerAddress.setText(Address);
-                                        }
-                                    }
+                                JSONObject jsonObject = jsonArray.getJSONObject(0);
+                                //String sub = s.substring(1,s.length()-1);
+                                String code = jsonObject.getString("code");
+                                String message = jsonObject.getString("message");
+                                //Log.e("sub A s","s"+sub);
+                                if (code.equals("1")) {
+                                    onTaskCompleted("Call accept and moved in started call");
+                                    startActivity(new Intent(newCallDetails.this, userHome.class));
                                 } else {
-                                    Log.e("eee","No data found1111");
-                                    onTaskCompleted("No Data found");
+                                    onTaskCompleted("Error:"+message);
                                 }
-                            } catch (Exception ee){
-                                Log.e("eee"," dd"+ee.getLocalizedMessage());
-                                onTaskCompleted(ee.getLocalizedMessage());
+                            } catch (Exception e) {
+                                onTaskCompleted(e.getMessage());
                             }
                         }
                     }, new Response.ErrorListener() {
@@ -850,7 +799,6 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             HttpTransportSE androidHttpTransport = new HttpTransportSE(url);
             try {
                 androidHttpTransport.call(SOAP_ACTION, envelope);
-
                 result = ((SoapObject)envelope.bodyIn).getProperty(0).toString();
                 if(request.equals("")){
                     Object re= null;
@@ -862,7 +810,6 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                 onTaskCompleted(e.getLocalizedMessage());
             }
             return result;
-
         }
         @Override
         protected void onCancelled() {

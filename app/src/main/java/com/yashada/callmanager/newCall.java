@@ -236,6 +236,7 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
         //GetSelectedCallByID
 
         try{
+          //  Toast.makeText(this, "UserId:"+UserId+",companyId:"+companyId, Toast.LENGTH_LONG).show();
             final ProgressDialog pDialog = new ProgressDialog(this);
             pDialog.setMessage("Loading...");
             pDialog.show();
@@ -285,10 +286,12 @@ public class newCall extends AppCompatActivity implements ontaskComplet,SearchVi
                                     new_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                         @Override
                                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                            String callId = contactList.get(position).getCall_id();
+                                            String callId = contactList.get(position).getSystem_call_id();
+                                            Toast.makeText(newCall.this, "Call On Click"+callId, Toast.LENGTH_SHORT).show();
                                             SharedPreferences.Editor editor =sharedpreferences.edit();
                                             editor.putInt("ActivityCode",1);
-                                            editor.putString("clickedId",callId);
+                                            editor.remove("clickedCallId");
+                                            editor.putString("clickedCallId",callId);
                                             editor.apply();
                                             editor.commit();
                                             try {
