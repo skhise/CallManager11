@@ -1506,7 +1506,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                                         //1
                                         String callId = sharedpreferences.getString("clickedId","0");
-                                        String Id = jsonObject.getString("callNo");
+                                        String Id = jsonObject.getString("Id");
                                         Log.e("Id",""+Id);
                                         Log.e("callId",""+callId);
                                         try{
