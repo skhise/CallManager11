@@ -19,6 +19,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonArrayRequest;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
@@ -32,6 +40,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class newCallDetails extends AppCompatActivity implements ontaskComplet{
 
@@ -117,7 +127,8 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                 try{
                     if(checkInternet){
                         Integer cId = Integer.parseInt(clickedId);
-                        new getCallDetails().execute(cId,CompanyID,logedUserID);
+                       // new getCallDetails().execute(cId,CompanyID,logedUserID);
+                        getCallDetails(cId,CompanyID,logedUserID);
                     } else {
                         onTaskCompleted("Internet connection failed, please check");
                     }
@@ -139,7 +150,8 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                     try{
                         checkInternet = urlClass.checkInternet();
                         if(checkInternet){
-                            new acceptCall().execute(clickedId,CompanyID+"");
+                            //new acceptCall().execute(clickedId,CompanyID+"");
+                            acceptCall(clickedId,CompanyID+"",logedUserID+"",UuserRole+"");
                         } else {
                             onTaskCompleted("Internet connection failed, please check");
                         }
@@ -155,7 +167,8 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                     try{
                         checkInternet = urlClass.checkInternet();
                         if(checkInternet){
-                            new rejectCall().execute(clickedId);
+                            //new rejectCall().execute(clickedId);
+                            rejectCall(clickedId,CompanyId,logedUserID+"",UuserRole+"");
                         } else {
                             onTaskCompleted("Internet connection failed, please check");
                         }
@@ -186,7 +199,8 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                             checkInternet = urlClass.checkInternet();
                             if(checkInternet){
                                 Integer cId = Integer.parseInt(clickedId);
-                                new getCallDetails().execute(cId,CompanyID,logedUserID);
+                                //new getCallDetails().execute(cId,CompanyID,logedUserID);
+                                getCallDetails(cId,CompanyID,logedUserID);
                             } else {
                                 onTaskCompleted("Internet connection failed, please check");
                             }
@@ -202,6 +216,154 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
                 }
             }
         });
+    }
+    public void getCallDetails(Integer UserID, Integer companyId,Integer callId){
+        //GetSelectedCallByID
+
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", UserID);
+            jsonObject.put("companyId", companyId);
+            jsonObject.put("callId", callId);
+            Log.d("companyId", companyId.toString());
+
+
+            String url = "http://service.newpro.in/app_slim/v1/GetSelectedCallByID?callId="+callId +"&companyId=" + companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Call Details", jsonArray.toString());
+
+                            pDialog.hide();
+                            try {
+                                if(jsonArray.length()>0){
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        //1
+                                        String callId = sharedpreferences.getString("clickedId","0");
+                                        String Id = jsonObject.getString("callNo");
+                                        Log.e("Id",""+Id);
+                                        Log.e("callId",""+callId);
+                                        if(Id.equals(callId)){
+                                            String CallNo = jsonObject.getString("callNo");
+                                            String Date = jsonObject.getString("callDatestr");
+                                            String SerialNo = jsonObject.getString("contactNo");
+                                            String ProductType = jsonObject.getString("productType");
+                                            String ProductBrand = jsonObject.getString("productNo");
+                                            String ProductNamev= jsonObject.getString("productName");
+                                            String CallDesc = jsonObject.getString("callDetails");
+                                            String CustomerName = jsonObject.getString("customerName");
+                                            String ContactNo = jsonObject.getString("customerContact");
+                                            String CustEmail = jsonObject.getString("CustEmail");
+                                            String Address = jsonObject.getString("customer_address");
+
+                                            String contract_numberV = jsonObject.getString("contactNo");
+                                            String contract_typeV = jsonObject.getString("contactType");
+                                            String product_detailsV = jsonObject.getString("prodcutDetails");
+                                            String serviceTypeV = jsonObject.getString("serviceType");
+                                            String IssueTypeV = jsonObject.getString("issueType");
+                                            String IssuePriorityV = jsonObject.getString("servicePrority");
+                                            String LocationCallV = jsonObject.getString("callLocation");
+
+                                            if(contract_numberV.equals("") || contract_numberV.equals("0") || contract_numberV.equals(null)){
+                                                contract_numberV="NA";
+                                            }
+                                            if(contract_typeV.equals("") || contract_typeV.equals(null) || contract_typeV.equals("0")){
+                                                contract_typeV = "NA";
+                                            }
+                                            contract_number.setText(contract_numberV);
+                                            contract_type.setText(contract_typeV);
+                                            serviceType.setText(serviceTypeV);
+                                            IssueType.setText(IssueTypeV);
+                                            IssuePriority.setText(IssuePriorityV);
+                                            LocationCall.setText(LocationCallV);
+                                            call_view_issueDetails.setText(CallDesc);
+                                            if(ProductNamev.equals("") || ProductNamev.equals(null)){
+                                                ProductNamev = "NA";
+                                            }
+                                            if(ProductBrand.equals("0") || ProductBrand.equals(null) || ProductBrand.equals("")){
+                                                ProductBrand ="NA";
+                                            }
+                                            if(ProductType.equals("") || ProductType.equals(null) || ProductType.equals("0")){
+                                                ProductType = "NA";
+                                            }
+                                            if(product_detailsV.equals("") || product_detailsV.equals(null)){
+                                                product_detailsV = "NA";
+                                            }
+                                            productName.setText(ProductNamev);
+                                            call_veiw_productNumber.setText(ProductBrand);
+                                            call_veiw_productType.setText(ProductType);
+                                            product_details.setText(product_detailsV);
+
+
+                                            call_veiw_id.setText(CallNo);
+                                            call_veiw_date.setText(Date);
+//                                call_veiw_rnumber.setText(SerialNo);
+
+
+
+//2
+
+
+                                            //3
+
+
+
+                                            call_details_customerName.setText(CustomerName);
+                                            call_details_mobileNumber.setText(ContactNo);
+                                            call_details_emailId.setText(CustEmail);
+                                            call_details_customerAddress.setText(Address);
+                                        }
+                                    }
+                                } else {
+                                    Log.e("eee","No data found1111");
+                                    onTaskCompleted("No Data found");
+                                }
+                            } catch (Exception ee){
+                                Log.e("eee"," dd"+ee.getLocalizedMessage());
+                                onTaskCompleted(ee.getLocalizedMessage());
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(newCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
     }
     @Override
     public boolean onSupportNavigateUp() {
@@ -257,7 +419,211 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
     public void onTaskCompleted(String response) {
         Toast.makeText(getApplicationContext(), "Response"+response, Toast.LENGTH_LONG).show();
     }
-    class rejectCall extends AsyncTask<String,String,String>{
+    void rejectCall(String clickedId,String companyId,String logedUserID,String userRole){
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", logedUserID);
+            jsonObject.put("companyId", companyId);
+            jsonObject.put("callId", clickedId);
+            jsonObject.put("userRole", userRole);
+            Log.d("companyId", companyId.toString());
+            String url = "http://service.newpro.in/app_slim/v1/RejectCall?userRole="+userRole+"&callId="+clickedId +"&companyId=" + companyId+"&userId="+logedUserID+"";
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Call Details", jsonArray.toString());
+
+                            pDialog.hide();
+
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(newCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+    void acceptCall(String clickedId,String companyId,String logedUserID,String userRole){
+        try{
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("userId", logedUserID);
+            jsonObject.put("companyId", companyId);
+            jsonObject.put("callId", clickedId);
+            jsonObject.put("userRole", userRole);
+            Log.d("companyId", companyId.toString());
+
+            String url = "http://service.newpro.in/app_slim/v1/CallStart?userRole="+userRole+"&UserId="+logedUserID+"&callId="+clickedId +"&companyId=" + companyId;
+
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Call Details", jsonArray.toString());
+
+                            pDialog.hide();
+                            try {
+                                if(jsonArray.length()>0){
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        //1
+                                        String callId = sharedpreferences.getString("clickedId","0");
+                                        String Id = jsonObject.getString("callNo");
+                                        Log.e("Id",""+Id);
+                                        Log.e("callId",""+callId);
+                                        if(Id.equals(callId)){
+                                            String CallNo = jsonObject.getString("callNo");
+                                            String Date = jsonObject.getString("callDatestr");
+                                            String SerialNo = jsonObject.getString("contactNo");
+                                            String ProductType = jsonObject.getString("productType");
+                                            String ProductBrand = jsonObject.getString("productNo");
+                                            String ProductNamev= jsonObject.getString("productName");
+                                            String CallDesc = jsonObject.getString("callDetails");
+                                            String CustomerName = jsonObject.getString("customerName");
+                                            String ContactNo = jsonObject.getString("customerContact");
+                                            String CustEmail = jsonObject.getString("CustEmail");
+                                            String Address = jsonObject.getString("customer_address");
+
+                                            String contract_numberV = jsonObject.getString("contactNo");
+                                            String contract_typeV = jsonObject.getString("contactType");
+                                            String product_detailsV = jsonObject.getString("prodcutDetails");
+                                            String serviceTypeV = jsonObject.getString("serviceType");
+                                            String IssueTypeV = jsonObject.getString("issueType");
+                                            String IssuePriorityV = jsonObject.getString("servicePrority");
+                                            String LocationCallV = jsonObject.getString("callLocation");
+
+                                            if(contract_numberV.equals("") || contract_numberV.equals("0") || contract_numberV.equals(null)){
+                                                contract_numberV="NA";
+                                            }
+                                            if(contract_typeV.equals("") || contract_typeV.equals(null) || contract_typeV.equals("0")){
+                                                contract_typeV = "NA";
+                                            }
+                                            contract_number.setText(contract_numberV);
+                                            contract_type.setText(contract_typeV);
+                                            serviceType.setText(serviceTypeV);
+                                            IssueType.setText(IssueTypeV);
+                                            IssuePriority.setText(IssuePriorityV);
+                                            LocationCall.setText(LocationCallV);
+                                            call_view_issueDetails.setText(CallDesc);
+                                            if(ProductNamev.equals("") || ProductNamev.equals(null)){
+                                                ProductNamev = "NA";
+                                            }
+                                            if(ProductBrand.equals("0") || ProductBrand.equals(null) || ProductBrand.equals("")){
+                                                ProductBrand ="NA";
+                                            }
+                                            if(ProductType.equals("") || ProductType.equals(null) || ProductType.equals("0")){
+                                                ProductType = "NA";
+                                            }
+                                            if(product_detailsV.equals("") || product_detailsV.equals(null)){
+                                                product_detailsV = "NA";
+                                            }
+                                            productName.setText(ProductNamev);
+                                            call_veiw_productNumber.setText(ProductBrand);
+                                            call_veiw_productType.setText(ProductType);
+                                            product_details.setText(product_detailsV);
+
+
+                                            call_veiw_id.setText(CallNo);
+                                            call_veiw_date.setText(Date);
+//                                call_veiw_rnumber.setText(SerialNo);
+
+
+
+//2
+
+
+                                            //3
+
+
+
+                                            call_details_customerName.setText(CustomerName);
+                                            call_details_mobileNumber.setText(ContactNo);
+                                            call_details_emailId.setText(CustEmail);
+                                            call_details_customerAddress.setText(Address);
+                                        }
+                                    }
+                                } else {
+                                    Log.e("eee","No data found1111");
+                                    onTaskCompleted("No Data found");
+                                }
+                            } catch (Exception ee){
+                                Log.e("eee"," dd"+ee.getLocalizedMessage());
+                                onTaskCompleted(ee.getLocalizedMessage());
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(newCallDetails.this,"User Home:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+
+   /* class rejectCall extends AsyncTask<String,String,String>{
 
 
         String url = urlClass.getUrl();
@@ -444,6 +810,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             Log.e("accept result", s);
         }
     }
+
     class getCallDetails extends AsyncTask<Integer,String,String> {
 
         String url = urlClass.getUrl();
@@ -627,5 +994,5 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
         stopService(intentL);
         stopService(intentN);
         super.onDestroy();
-    }
+    }*/
 }
