@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.yashada.callmanager.closedCall"
+    tools:context="com.amcdesk.servicecrm.closedCall"
     tools:showIn="@layout/activity_closed_call"
     android:orientation="vertical">
 

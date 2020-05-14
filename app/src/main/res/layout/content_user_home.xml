@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="com.yashada.callmanager.userHome"
-    android:orientation="vertical"
+    tools:context="com.amcdesk.servicecrm.userHome"
     tools:showIn="@layout/app_bar_user_home">
 
     <LinearLayout
@@ -18,12 +17,12 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/layout">
+            android:id="@+id/layout"
+            >
             <ImageView
                 android:id="@+id/header_cover_image"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
                 android:scaleType="centerCrop"
                 android:src="@drawable/nav_menu_header_bg"
                 app:srcCompat="@drawable/nav_menu_header_bg" />
@@ -69,7 +68,6 @@
                     android:id="@+id/location"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/designation"
                     android:layout_centerHorizontal="true"
                     android:visibility="gone"
                     android:layout_marginTop="5dp"
@@ -93,7 +91,8 @@
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"
+            >
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -250,11 +249,12 @@
                             android:text="Pending Call" />
 
                     </RelativeLayout>
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_margin="10dp"
+                        android:layout_weight="1"
                         android:orientation="vertical">
 
                         <Button
@@ -264,10 +264,10 @@
                             android:layout_gravity="center_horizontal"
                             android:background="#00C851"
                             android:onClick="showResolvedCall"
-                            android:textColor="#fff"
                             android:padding="25dp"
                             android:src="@drawable/select"
                             android:text="0"
+                            android:textColor="#fff"
                             android:textSize="30dp" />
 
                         <TextView
@@ -276,7 +276,7 @@
                             android:layout_gravity="center_horizontal"
                             android:gravity="center_horizontal"
                             android:padding="10dp"
-                            android:text="Resolved Call"/>
+                            android:text="Resolved Call" />
 
                     </LinearLayout>
 
@@ -332,5 +332,18 @@
 
     </LinearLayout>
 
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/app_by"
+        android:textAlignment="center"
+        android:textColor="#B6B2B2"
+        android:textSize="10pt"
+        android:textStyle="bold"
+        />
 </LinearLayout>
+</RelativeLayout>

@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="#0099cc"
     android:gravity="center_vertical"
-    tools:context="com.yashada.callmanager.choise">
+    tools:context="com.amcdesk.servicecrm.choise">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,

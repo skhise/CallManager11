@@ -17,6 +17,8 @@
     <string name="title_activity_flash">FlashActivity</string>
     <string name="title_status">Select call status</string>
     <string name="title_action_reason">Select call action</string>
+    <string name="app_by">Powered By AMCdesk.com</string>
+    <string name="app_error">This feature is only available on private server.</string>
 
     <string name="title_activity_splash_screen">Service CRM</string>
     <string name="dummy_button">Dummy Button</string>

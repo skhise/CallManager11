@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/squre"
-    tools:context="com.yashada.callmanager.SplashScreen">
+    tools:context="com.amcdesk.servicecrm.SplashScreen">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:gravity="center_horizontal"
-        android:src="@drawable/arcprolite_log"/>
+        android:src="@drawable/logo"/>
     <TextView
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
