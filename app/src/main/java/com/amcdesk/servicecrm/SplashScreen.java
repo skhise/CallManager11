@@ -200,7 +200,7 @@ public class SplashScreen extends AppCompatActivity {
                             jsonObject.put("password", loginPassword);
                             jsonObject.put("deviceId", deviceId);
 
-                            String url = "http://service.newpro.in/app_slim/v1/login?" +"loginName=" + loginName +"&password=" + loginPassword +"&deviceId=" + deviceId;
+                            String url = urlClass.getUrl()+"login?" +"loginName=" + loginName +"&password=" + loginPassword +"&deviceId=" + deviceId;
 
                             JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
                                     url,jsonObject,

@@ -293,7 +293,7 @@ public class userHome extends AppCompatActivity
                         jsonObject.put("companyId", companyId);
 
 
-                        String url = "http://service.newpro.in/app_slim/v1/EngineerProfile?" +"userId=" + userId +"&companyId=" + companyId;
+                        String url = urlClass.getUrl()+"EngineerProfile?" +"userId=" + userId +"&companyId=" + companyId;
 
                         JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                                 url,null,
@@ -574,7 +574,7 @@ public class userHome extends AppCompatActivity
                 // Handle the camera action
                 if(checkInternet){
                     finish();
-                    showNewCall(this.getCurrentFocus().getRootView());
+                    showNewCall(null);
                 } else{
                     onTaskCompleted("Internet connection failed, please check");
                 }
@@ -582,7 +582,7 @@ public class userHome extends AppCompatActivity
             } else if (id == R.id.nav_open_call) {
                 if(checkInternet){
                     finish();
-                    showOpenCall(this.getCurrentFocus().getRootView());
+                    showOpenCall(null);
                 } else{
                     onTaskCompleted("Internet connection failed, please check");
                 }
@@ -590,7 +590,7 @@ public class userHome extends AppCompatActivity
             } else if (id == R.id.nav_pending_call) {
                 if(checkInternet){
                     finish();
-                    showPendingCall(this.getCurrentFocus().getRootView());
+                    showPendingCall(null);
                 } else{
                     onTaskCompleted("Internet connection failed, please check");
                 }
@@ -599,7 +599,7 @@ public class userHome extends AppCompatActivity
                 try{
                     if(checkInternet){
                         finish();
-                        showResolvedCall(this.getCurrentFocus().getRootView());
+                        showResolvedCall(null);
                     } else{
                         onTaskCompleted("Internet connection failed, please check");
                     }
@@ -751,7 +751,7 @@ public class userHome extends AppCompatActivity
             Log.d("companyId", companyId.toString());
 
 
-            String url = "http://service.newpro.in/app_slim/v1/EngineerDashBoard?" +"userId=" + UserID +"&companyId=" + companyId;
+            String url = urlClass.getUrl()+"EngineerDashBoard?" +"userId=" + UserID +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
                     url,null,

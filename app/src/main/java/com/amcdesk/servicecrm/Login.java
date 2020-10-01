@@ -43,6 +43,7 @@ public class Login extends AppCompatActivity{
     EditText Login_Email;
     EditText Login_Password;
 
+
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
 
@@ -114,9 +115,10 @@ public class Login extends AppCompatActivity{
                 jsonObject.put("password", password);
                 jsonObject.put("deviceId", deviceId);
 
-                String url = "http://service.newpro.in/app_slim/v1/login?" +"loginName=" + email +"&password=" + password +"&deviceId=" + deviceId;
+                String url = urlClass.getUrl()+"login?" +"loginName=" + email +"&password=" + password +"&deviceId=" + deviceId;
 
                 JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.POST,
+
                         url,jsonObject,
                         new Response.Listener<JSONObject>() {
 
@@ -235,7 +237,7 @@ public class Login extends AppCompatActivity{
         protected String doInBackground(String... settings) {
             try {
                 UserPassword = settings[1];
-                URL url = new URL("http://service.newpro.in/app_slim/v1/login?" + "loginName=" + settings[0] + "&password=" + settings[1] + "&deviceId=" + settings[2]);
+                URL url = new URL(urlClass.getUrl()+"login?" + "loginName=" + settings[0] + "&password=" + settings[1] + "&deviceId=" + settings[2]);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("POST");
                 urlConnection.setRequestProperty("content-length", "0");

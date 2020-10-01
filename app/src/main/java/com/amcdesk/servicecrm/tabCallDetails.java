@@ -877,7 +877,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             pDialog.show();
 
             Integer callId = sharedpreferences.getInt("callId",0);
-            final String url = "http://service.newpro.in/app_slim/v1/CallActions?userLocation="+userLocation+"&userRole="+UuserRole+
+            final String url = urlClass.getUrl()+"CallActions?userLocation="+userLocation+"&userRole="+UuserRole+
                     "&UserId="+logedUserID+"&action_note="+note+"&CallReasonId="+reasonId+
                     "&action="+statusId+"&callId="+callId+"&companyId=" + CompanyID;
 
@@ -968,7 +968,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             Integer c = Integer.parseInt(callId);
 
 
-            String url = "http://service.newpro.in/app_slim/v1/SendMessage?ActionNote="+action_note+"&CallId="+c+"&CompanyId=" + CompanyID;
+            String url = urlClass.getUrl()+"SendMessage?ActionNote="+action_note+"&CallId="+c+"&CompanyId=" + CompanyID;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
                     url,null,
@@ -1045,7 +1045,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("companyId", companyId);
             Log.d("companyId", companyId.toString());
-            String url = "http://service.newpro.in/app_slim/v1/getProblemDesc?callId="+ callId +"&companyId="+ companyId;
+            String url = urlClass.getUrl()+"getProblemDesc?callId="+ callId +"&companyId="+ companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,
@@ -1177,10 +1177,11 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            Log.e("err_string","==>"+result);
-            dialog.dismiss();
-            if(result!="" && !result.equals(null)){
+            Log.i("err_string","==>"+result);
+
+            if(!result.equals("") && !result.equals(null)){
                 try {
+                    dialog.dismiss();
                     JSONObject jsonObject = new JSONObject(result);
                     String code = jsonObject.getString("code");
                     if(code.equals("1")){
@@ -1194,7 +1195,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     }
 
                 } catch (Exception ee){
-
+                    dialog.dismiss();
                     Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 }
 
@@ -1215,7 +1216,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             Log.d("companyId", companyId.toString());
 
 
-            String url = "http://service.newpro.in/app_slim/v1/GetCallStatus?companyId=" + companyId;
+            String url = urlClass.getUrl()+"GetCallStatus?companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
                     url,null,
@@ -1293,7 +1294,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             Log.d("companyId", companyId.toString());
 
 
-            String url = "http://service.newpro.in/app_slim/v1/GetMessage?CallId=" + callId +"&UserId=" + UserId +"&CompanyId=" + companyId;
+            String url = urlClass.getUrl()+"GetMessage?CallId=" + callId +"&UserId=" + UserId +"&CompanyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.GET,
                     url,null,
@@ -1398,7 +1399,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             Log.d("companyId", companyId.toString());
 
 
-            String url = "http://service.newpro.in/app_slim/v1/GetCallActionReasons?companyId=" + companyId;
+            String url = urlClass.getUrl()+"GetCallActionReasons?companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,
@@ -1479,7 +1480,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             Log.d("companyId", companyId.toString());
 
 
-            String url = "http://service.newpro.in/app_slim/v1/GetSelectedCallByID?callId="+callId +"&companyId=" + companyId;
+            String url = urlClass.getUrl()+"GetSelectedCallByID?callId="+callId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,

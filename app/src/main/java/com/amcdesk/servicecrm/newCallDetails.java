@@ -226,7 +226,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             Log.d("companyId", companyId.toString());
 
 
-            String url = "http://service.newpro.in/app_slim/v1/GetSelectedCallByID?callId="+callId +"&companyId=" + companyId;
+            String url = urlClass.getUrl()+"GetSelectedCallByID?callId="+callId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,
@@ -431,7 +431,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             jsonObject.put("callId", clickedId);
             jsonObject.put("userRole", userRole);
             Log.d("companyId", companyId.toString());
-            String url = "http://service.newpro.in/app_slim/v1/RejectCall?userRole="+userRole+"&callId="+clickedId +"&companyId="+companyId+"&userId="+logedUserID+"";
+            String url = urlClass.getUrl()+"RejectCall?userRole="+userRole+"&callId="+clickedId +"&companyId="+companyId+"&userId="+logedUserID+"";
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,
                     new Response.Listener<JSONArray>() {
@@ -503,7 +503,7 @@ public class newCallDetails extends AppCompatActivity implements ontaskComplet{
             jsonObject.put("userRole", userRole);
             Log.d("companyId", companyId.toString());
 
-            String url = "http://service.newpro.in/app_slim/v1/CallStart?userRole="+userRole+"&UserId="+logedUserID+"&callId="+clickedId +"&companyId=" + companyId;
+            String url = urlClass.getUrl()+"CallStart?userRole="+userRole+"&UserId="+logedUserID+"&callId="+clickedId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,

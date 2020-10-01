@@ -178,7 +178,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
             String emp_email = eng_email.getText().toString();
             String emp_contact = eng_contact.getText().toString();
             String emp_address = eng_address.getText().toString();
-            final String url = "http://service.newpro.in/app_slim/v1/EditEngineerProfile?UserId=" + UserId +"" +
+            final String url = urlClass.getUrl()+"EditEngineerProfile?UserId=" + UserId +"" +
                     "&CurrentDateTime="+formattedDate+"&Address="+emp_address+"&Phone="+emp_contact+"&" +
                     "Email="+emp_email+"&companyId=" + companyId+"&Name="+emp_name;
 
@@ -346,7 +346,7 @@ public class userProfile extends AppCompatActivity implements ontaskComplet {
             final ProgressDialog pDialog = new ProgressDialog(this);
             pDialog.setMessage("Loading...");
             pDialog.show();
-            final String url = "http://service.newpro.in/app_slim/v1/EngineerProfile?userId=" + UserId +"&companyId=" + companyId;
+            final String url = urlClass.getUrl()+"EngineerProfile?userId=" + UserId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,

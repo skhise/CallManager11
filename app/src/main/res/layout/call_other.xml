@@ -6,19 +6,13 @@
     android:orientation="vertical"
     tools:context=".tabCallDetails">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="15dp">
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/image_other_view"
+            android:id="@+id/image_other_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -45,7 +39,7 @@
                 android:background="@drawable/pressed"
                 android:paddingLeft="15dp"
                 android:paddingRight="15dp"
-                android:text="Capture Image"
+                android:text="Select Image"
                 android:textColor="@color/white"
                 android:textSize="15dp"
                 android:textStyle="bold" />
@@ -64,6 +58,7 @@
                     android:layout_weight="1"
                     android:background="@drawable/pressed"
                     android:text="Upload Data"
+                    android:clickable="false"
                     android:textColor="@color/white"
                     android:textSize="15dp"
                     android:textStyle="bold" />
@@ -93,26 +88,25 @@
 
         </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:gravity="center"
+                android:text="Upload History"
+                android:textColor="#525252"
+                android:textSize="15dp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="Upload History"
-                    android:textColor="#525252"
-                    android:textSize="15dp" />
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-                    android:layout_margin="10dp"
-                    android:layout_weight="1"
-                    android:background="#dad9d9" />
-            </LinearLayout>
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:background="#dad9d9" />
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 </LinearLayout>

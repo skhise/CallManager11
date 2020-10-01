@@ -202,7 +202,7 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
             pDialog.setMessage("Loading...");
             pDialog.show();
             Integer statusId = 4;
-            final String url = "http://service.newpro.in/app_slim/v1/GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
+            final String url = urlClass.getUrl()+"GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,

@@ -210,7 +210,7 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
             pDialog.setMessage("Loading...");
             pDialog.show();
             Integer statusId = 5;
-            final String url = "http://service.newpro.in/app_slim/v1/GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
+            final String url = urlClass.getUrl()+"GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
                     url,null,
