@@ -18,6 +18,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -60,6 +61,7 @@ public class userHome extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,ontaskComplet {
 
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
+    private Boolean exit = false;
 
     public String PASSWORD="loginPassword";
     public static final String PREFS_NAME = "user_details";
@@ -444,23 +446,22 @@ public class userHome extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
+        if (exit) {
+            finish(); // finish activity
+            System.exit(0);
         } else {
-            super.onBackPressed();
-        }
-        try{
+            Toast.makeText(this, "Press Back again to Exit.",
+                    Toast.LENGTH_SHORT).show();
+            exit = true;
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    exit = false;
+                }
+            }, 3 * 1000);
 
-            this.count = count+1;
-            if(this.count==2){
-                finish();
-            } else {
-                Toast.makeText(getApplicationContext(),"Press one more time to exit",Toast.LENGTH_LONG).show();
-            }
-        }catch (Exception ee){
-            Toast.makeText(getApplicationContext(),ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
+
     }
     public void showNewCall(View veiw){
         try{
@@ -513,7 +514,23 @@ public class userHome extends AppCompatActivity
         try{
             checkInternet = urlClass.checkInternet();
             if(checkInternet){
-                Intent intent = new Intent(userHome.this,closedCall.class);
+                Intent intent = new Intent(userHome.this, resolvedCall.class);
+                startActivity(intent);
+                finish();
+            } else{
+                onTaskCompleted("Internet connection failed, please check");
+            }
+        }catch (Exception ee){
+            onTaskCompleted(ee.getMessage());
+        }
+
+
+    }
+    public void showClosedCall(View veiw){
+        try{
+            checkInternet = urlClass.checkInternet();
+            if(checkInternet){
+                Intent intent = new Intent(userHome.this, closedCall.class);
                 startActivity(intent);
                 finish();
             } else{
@@ -607,6 +624,18 @@ public class userHome extends AppCompatActivity
                     onTaskCompleted(e.getMessage());
                 }
 
+            } else if (id == R.id.nav_closed_call) {
+                try{
+                    if(checkInternet){
+                        finish();
+                        showClosedCall(null);
+                    } else{
+                        onTaskCompleted("Internet connection failed, please check");
+                    }
+                }catch (Exception e){
+                    onTaskCompleted(e.getMessage());
+                }
+
             } else if (id == R.id.nav_user_profile) {
                 try{
                     if(checkInternet){
@@ -637,9 +666,10 @@ public class userHome extends AppCompatActivity
                     SharedPreferences.Editor editor = sharedpreferences.edit();
                     editor.putString("online","0");
                     editor.apply();
+                    editor.clear();
                     editor.commit();
                     startService(new Intent(userHome.this,onlineService.class));
-                    startActivity(new Intent(userHome.this,Login.class));
+                    startActivity(new Intent(userHome.this,Login.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     finish();
                 }catch (Exception e){
                     onTaskCompleted(e.getMessage());
@@ -795,6 +825,12 @@ public class userHome extends AppCompatActivity
                                             }
                                         }
                                         if(Status.equals("Partially Resolved")){
+
+                                            TextView resolved_call = (TextView) findViewById(R.id.resolved_call);
+                                            resolved_call.setText(Calls);
+
+                                        }
+                                        if(Status.equals("Closed")){
 
                                             TextView closed_call = (TextView) findViewById(R.id.closed_call);
                                             closed_call.setText(Calls);

@@ -11,19 +11,20 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <uses-feature android:name="android.hardware.camera" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:theme="@style/AppTheme">
-
+        <activity android:name=".closedCall"></activity>
         <activity
-            android:name="com.amcdesk.servicecrm.SplashScreen"
+            android:name=".SplashScreen"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_splash_screen"
             android:theme="@style/FullscreenTheme">
@@ -35,79 +36,78 @@
         </activity>
 
         <service
-            android:name="com.amcdesk.servicecrm.check_notification"
+            android:name=".check_notification"
             android:enabled="true"
             android:exported="false"
-            android:stopWithTask="false"/>
+            android:stopWithTask="false" />
         <service
-            android:name="com.amcdesk.servicecrm.locationService"
+            android:name=".locationService"
             android:enabled="true"
             android:exported="false"
-            android:stopWithTask="false"/>
-        <!--        <service-->
-        <!--            android:name=".onlineService"-->
-        <!--            android:enabled="true"-->
-        <!--            android:exported="false"-->
-        <!--            android:stopWithTask="false"/>-->
+            android:stopWithTask="false" /> <!-- <service -->
+        <!-- android:name=".onlineService" -->
+        <!-- android:enabled="true" -->
+        <!-- android:exported="false" -->
+        <!-- android:stopWithTask="false"/> -->
         <activity
-            android:name="com.amcdesk.servicecrm.newCall"
+            android:name=".newCall"
             android:label="@string/title_activity_new_call"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name="com.amcdesk.servicecrm.pendingCall"
+            android:name=".pendingCall"
             android:label="@string/title_activity_pending_call"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name="com.amcdesk.servicecrm.openCall"
+            android:name=".openCall"
             android:label="@string/title_activity_open_call"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name="com.amcdesk.servicecrm.closedCall"
+            android:name=".resolvedCall"
             android:label="@string/title_activity_closed_call"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name="com.amcdesk.servicecrm.Login"
+            android:name=".Login"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.amcdesk.servicecrm.userHome"
+            android:name=".userHome"
             android:screenOrientation="portrait"
-            android:stopWithTask="false"/>
+            android:stopWithTask="false" />
         <activity
-            android:name="com.amcdesk.servicecrm.tabCallDetails"
+            android:name=".tabCallDetails"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.amcdesk.servicecrm.newCallDetails"
+            android:name=".newCallDetails"
             android:label="@string/title_activity_new_call_details"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
-            android:name="com.amcdesk.servicecrm.userProfile"
+            android:name=".userProfile"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.amcdesk.servicecrm.Setting"
+            android:name=".Setting"
             android:screenOrientation="portrait" />
         <activity
-            android:name="com.amcdesk.servicecrm.notificationDetails"
+            android:name=".notificationDetails"
             android:label="@string/title_activity_notification_details"
             android:theme="@style/AppTheme" />
+
         <receiver
-            android:name="com.amcdesk.servicecrm.CheckConnectivity"
+            android:name=".CheckConnectivity"
             android:enabled="true" />
         <receiver
-            android:name="com.amcdesk.servicecrm.Restarter"
+            android:name=".Restarter"
             android:enabled="true"
             android:exported="true"
-            android:label="RestartServiceWhenStopped"/>
+            android:label="RestartServiceWhenStopped" />
         <receiver
-            android:name="com.amcdesk.servicecrm.ServiceRestarter"
+            android:name=".ServiceRestarter"
             android:enabled="true"
             android:exported="true"
-            android:label="LocaionService"/>
-
+            android:label="LocaionService" />
     </application>
 
 </manifest>

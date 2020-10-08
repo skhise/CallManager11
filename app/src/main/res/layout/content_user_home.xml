@@ -101,7 +101,7 @@
                 android:layout_marginTop="20dp"
                 android:orientation="vertical">
                 <LinearLayout
-                    android:layout_width="250dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
@@ -196,14 +196,6 @@
                             android:text="Open Call"/>
 
                     </RelativeLayout>
-
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="250dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -250,6 +242,15 @@
 
                     </RelativeLayout>
 
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="250dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -258,7 +259,7 @@
                         android:orientation="vertical">
 
                         <Button
-                            android:id="@+id/closed_call"
+                            android:id="@+id/resolved_call"
                             android:layout_width="230dp"
                             android:layout_height="99dp"
                             android:layout_gravity="center_horizontal"
@@ -279,8 +280,44 @@
                             android:text="Resolved Call" />
 
                     </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="250dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
+                            <Button
+                                android:id="@+id/closed_call"
+                                android:layout_width="230dp"
+                                android:layout_height="99dp"
+                                android:layout_gravity="center_horizontal"
+                                android:background="#00C851"
+                                android:onClick="showClosedCall"
+                                android:padding="25dp"
+                                android:src="@drawable/select"
+                                android:text="0"
+                                android:textColor="#fff"
+                                android:textSize="30dp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_horizontal"
+                                android:gravity="center_horizontal"
+                                android:padding="10dp"
+                                android:text="Closed Call" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">

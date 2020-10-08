@@ -20,7 +20,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_closed_call" />
+    <include layout="@layout/content_closed_call2" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"

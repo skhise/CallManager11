@@ -185,6 +185,27 @@
                                         android:textSize="20dp" />
 
                                 </LinearLayout>
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:orientation="horizontal"
+                                    android:padding="5dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:text="Sub-Customer Name : "
+                                        android:layout_weight="1"
+                                        android:textSize="15dp" />
+
+                                    <TextView
+                                        android:id="@+id/call_details_subcustomerName"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:textSize="20dp" />
+
+                                </LinearLayout>
 
                                 <LinearLayout
                                     android:layout_width="match_parent"

@@ -3,6 +3,7 @@ package com.amcdesk.servicecrm;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,6 +11,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -34,11 +36,13 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -53,6 +57,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -95,12 +100,14 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     String UserName;
     Integer logedUserID;
     Integer CompanyID;
+    GridView gridview;
     Integer UuserRole;
     final String gpsLocationProvider = LocationManager.GPS_PROVIDER;
     final String networkLocationProvider = LocationManager.NETWORK_PROVIDER;
     String wantPermission = Manifest.permission.ACCESS_FINE_LOCATION;
     Boolean IsUseractive;
     List<String> spinnerLabelList;
+    List<OtherImage> otherImagesList;
     List<Integer> spinnerIdList;
     List<String> spinnerLabelListReason;
     List<Integer> spinnerIdListReason;
@@ -125,7 +132,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     String callStatusG ="0";
     TextView call_veiw_id,call_veiw_date,call_veiw_rnumber,call_veiw_productNumber,call_time,
             call_veiw_productBrand,call_veiw_productType,
-            call_view_issueDetails,call_details_customerName,
+            call_view_issueDetails,call_details_customerName,call_details_subcustomerName,
             call_details_mobileNumber,call_details_emailId,call_details_customerAddress,mTextMessage,
             contract_number,contract_type,productName,product_details,serviceType,IssueType,IssuePriority,LocationCall;
     String selectedContract="0";
@@ -183,7 +190,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     View view_action = inflater_action.inflate(R.layout.call_action, layout_user, false);
                     layout_user.addView(view_action);
                     initializeActionData(view_action);
-                    if(callStatusG.equals("6")){
+                    if(callStatusG.equals("6") || callStatusG.equals("7")){
                         actionLayout.setVisibility(LinearLayout.GONE);
                     } else {
                         actionLayout.setVisibility(LinearLayout.VISIBLE);
@@ -422,8 +429,9 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     LayoutInflater inflater_other = LayoutInflater.from(tabCallDetails.this);
                     View view_other = inflater_other.inflate(R.layout.call_other, layout_user, false);
                     layout_user.addView(view_other);
+                    otherImagesList = new ArrayList<OtherImage>();
                     LinearLayout image_other_view = (LinearLayout) view_other.findViewById(R.id.image_other_view);
-                    if (callStatusG.equals("6")) {
+                    if (callStatusG.equals("6") ||callStatusG.equals("7")) {
                         image_other_view.setVisibility(LinearLayout.GONE);
                     } else {
                         image_other_view.setVisibility(LinearLayout.VISIBLE);
@@ -438,6 +446,25 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 selectImage();
                             }
                         });
+                        gridview = (GridView) view_other.findViewById(R.id.gridview);
+
+                        if(!logedUserID.equals(0) || !CompanyID.equals(0)){
+                            try {
+                                String callId = sharedpreferences.getString("clickedId","0");
+                                if(checkInternet){
+                                    //new loadClosedCall().execute(UserID,CompanyID);
+                                    Toast.makeText(tabCallDetails.this, ""+callId, Toast.LENGTH_SHORT).show();
+                                    loadCallAttachment(logedUserID,CompanyID,callId,gridview);
+                                } else {
+                                    onTaskCompleted("Internet connection failed, please check");
+                                }
+                            }catch (Exception e){
+                                onTaskCompleted(e.getLocalizedMessage());
+                            }
+                        } else {
+                            Toast.makeText(tabCallDetails.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                        }
+
                         btn_upload.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
@@ -468,7 +495,108 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         }
 
     };
+    public void loadCallAttachment(Integer UserId, Integer companyId,String callId,final GridView gridView){
+        //GetSelectedCallByID
 
+        try {
+            final ProgressDialog pDialog = new ProgressDialog(this);
+            pDialog.setMessage("Loading...");
+            pDialog.show();
+            Integer statusId = 7;
+            final String url = urlClass.getUrl()+"GetCallsAttachment?callId=" + callId +"&UserId=" + UserId +"&companyId=" + companyId;
+            JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
+                    url,null,
+                    new Response.Listener<JSONArray>() {
+
+                        @Override
+                        public void onResponse(JSONArray jsonArray) {
+                            Log.d("Closed Call", jsonArray.toString()+" url:"+url);
+                            pDialog.hide();
+                            try {
+                                if(jsonArray.length()>0){
+                                    for(int i=0;i<jsonArray.length();i++){
+                                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                                        String imagepath = jsonObject.getString("imagepath");
+                                        try {
+                                            OtherImage img = new OtherImage();
+                                            img.setImageUrl(imagepath);
+                                            otherImagesList.add(img);
+                                        } catch (Exception e) {
+                                            Log.e("displayCountryList: ",e.getLocalizedMessage());
+                                        }
+                                    }
+                                    gridView.setAdapter(new ImageAdapter(getApplicationContext(),otherImagesList,urlClass.getUrl()));
+                                    gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                        @Override
+                                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                            try{
+                                                String img = otherImagesList.get(i).getImageUrl();
+                                                String url = urlClass.getFileUrl()+img;
+                                                loadPhoto(url);
+                                            }catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+
+                                        }
+                                    });
+                                } else {
+                                    onTaskCompleted("No Data found");
+                                }
+                            } catch (Exception ee){
+                                onTaskCompleted(ee.getLocalizedMessage());
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    VolleyLog.d("Login", "Error: " + error.getMessage());
+                    Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
+                    pDialog.hide();
+                }
+            }){
+                @Override
+                public Request.Priority getPriority() {
+                    return Priority.IMMEDIATE;
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    HashMap<String, String> headers = new HashMap<String, String>();
+                    headers.put("Content-Type", "application/json; charset=utf-8");
+
+                    return headers;
+                }
+            };
+
+
+// Adding request to request queue
+
+            //   AppController.getInstance().addToRequestQueue(jsonObjReq);
+            RequestQueue queue = AppController.getInstance(getApplicationContext()).getRequestQueue();
+            queue.add(jsonObjReq);
+        }catch (Exception e){
+            e.printStackTrace();
+            Toast.makeText(tabCallDetails.this,"closedCall:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+    private void loadPhoto(String url) {
+
+        final Dialog dialog = new Dialog(tabCallDetails.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        //dialog.setContentView(R.layout.custom_fullimage_dialog);
+        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(R.layout.custom_fullimage_dialoge,null);
+        ImageView image = (ImageView) layout.findViewById(R.id.fullimage);
+
+        Picasso.with(this)
+                .load(url).into(image);
+        image.requestLayout();
+        dialog.setContentView(layout);
+        dialog.show();
+
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -503,7 +631,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             StrictMode.setVmPolicy(builder.build());
             if ((clickedId != null || clickedId != "0") && (CompanyID != null || CompanyID != 0)) {
                 try {
-
                     Integer cId = Integer.parseInt(clickedId);
                     Log.e("clickedId->", cId + "");
                     if (checkInternet) {
@@ -562,6 +689,10 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             finish();
         }
         if (ActivityCde == 4) {
+            startActivity(new Intent(tabCallDetails.this, resolvedCall.class));
+            finish();
+        }
+        if (ActivityCde == 5) {
             startActivity(new Intent(tabCallDetails.this, closedCall.class));
             finish();
         }
@@ -577,6 +708,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             call_veiw_productType = (TextView) initializeData.findViewById(R.id.call_veiw_productType);
             call_view_issueDetails = (TextView) initializeData.findViewById(R.id.call_view_issueDetails);
             call_details_customerName = (TextView) initializeData.findViewById(R.id.call_details_customerName);
+            call_details_subcustomerName = (TextView) initializeData.findViewById(R.id.call_details_subcustomerName);
             call_details_mobileNumber = (TextView) initializeData.findViewById(R.id.call_details_mobileNumber);
             call_details_emailId = (TextView) initializeData.findViewById(R.id.call_details_emailId);
             call_details_customerAddress = (TextView) initializeData.findViewById(R.id.call_details_customerAddress);
@@ -1186,7 +1318,24 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     String code = jsonObject.getString("code");
                     if(code.equals("1")){
                         Toast.makeText(getApplicationContext(),"Upload Successfully", Toast.LENGTH_LONG).show();
-                        startActivity(new Intent(tabCallDetails.this,tabCallDetails.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                        if(!logedUserID.equals(0) || !CompanyID.equals(0)){
+                            try {
+                                String callId = sharedpreferences.getString("clickedId","0");
+                                if(checkInternet){
+                                    //new loadClosedCall().execute(UserID,CompanyID);
+                                    imageHolder.setImageDrawable(null);
+                                    Toast.makeText(tabCallDetails.this, ""+callId, Toast.LENGTH_SHORT).show();
+                                    loadCallAttachment(logedUserID,CompanyID,callId,gridview);
+                                } else {
+                                    onTaskCompleted("Internet connection failed, please check");
+                                }
+                            }catch (Exception e){
+                                onTaskCompleted(e.getLocalizedMessage());
+                            }
+                        } else {
+                            Toast.makeText(tabCallDetails.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                        }
+                      //  startActivity(new Intent(tabCallDetails.this,tabCallDetails.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     } else if(code.equals("0")){
                         Toast.makeText(getApplicationContext(),"Error in upload", Toast.LENGTH_LONG).show();
                     } else {
@@ -1510,6 +1659,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                                 String ProductNamev= jsonObject.getString("productName");
                                                 String CallDesc = jsonObject.getString("callDetails");
                                                 String CustomerName = jsonObject.getString("customerName");
+                                                String SubCustomerName = jsonObject.getString("subCustomerName");
                                                 String ContactNo = jsonObject.getString("customerContact");
                                                 String CustEmail = jsonObject.getString("CustEmail");
                                                 String Address = jsonObject.getString("Address");
@@ -1561,6 +1711,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                                 call_veiw_id.setText(CallNo);
                                                 call_veiw_date.setText(Date);
                                                 call_details_customerName.setText(CustomerName);
+                                                call_details_subcustomerName.setText(SubCustomerName);
                                                 call_details_mobileNumber.setText(ContactNo);
                                                 call_details_emailId.setText(CustEmail);
                                                 call_details_customerAddress.setText(Address);

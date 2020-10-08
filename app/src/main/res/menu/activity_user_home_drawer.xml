@@ -17,6 +17,10 @@
             android:id="@+id/nav_resolved_call"
             android:icon="@drawable/ic_resolved"
             android:title="Resolved Calls" />
+        <item
+            android:id="@+id/nav_closed_call"
+            android:icon="@drawable/ic_resolved"
+            android:title="Closed Calls" />
     </group>
     <item android:title="User">
         <menu>

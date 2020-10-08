@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class closedCall extends AppCompatActivity implements ontaskComplet,SearchView.OnQueryTextListener{
+public class resolvedCall extends AppCompatActivity implements ontaskComplet,SearchView.OnQueryTextListener{
     public static final int REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
     public String USERNAME= "loginEmail";
     public String PASSWORD="loginPassword";
@@ -67,14 +67,14 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_closed_call2);
+        setContentView(R.layout.activity_closed_call);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setTitle("Closed Call");
+        getSupportActionBar().setTitle("Resolved Call");
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        urlClass = new UrlClass(closedCall.this);
+        urlClass = new UrlClass(resolvedCall.this);
         checkInternet = urlClass.checkInternet();
         try {
             search_call = (SearchView) findViewById(R.id.search_call);
@@ -98,7 +98,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
             closed_listView = (ListView) findViewById(R.id.close_call_list);
             closed_listView.setTextFilterEnabled(true);
             contactList = new ArrayList<Contact>();
-            adapter = new ListAdaptor(contactList, closedCall.this);
+            adapter = new ListAdaptor(contactList, resolvedCall.this);
             sharedpreferences   = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
             UserName     = sharedpreferences.getString(USERNAME,"");
             UserID       = sharedpreferences.getInt(UserId,0);
@@ -118,10 +118,10 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                     onTaskCompleted(e.getLocalizedMessage());
                 }
             } else {
-                Toast.makeText(closedCall.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                Toast.makeText(resolvedCall.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
             }
         }catch (Exception ee){
-            Toast.makeText(closedCall.this,"Unable to get user details, "+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+            Toast.makeText(resolvedCall.this,"Unable to get user details, "+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -143,7 +143,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
 
 
                     } else {
-                        Toast.makeText(closedCall.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                        Toast.makeText(resolvedCall.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
                     }
                 } catch (Exception e) {
                     Log.e("Service Call error",e.getLocalizedMessage());
@@ -197,7 +197,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
     public void onBackPressed() {
         super.onBackPressed();
         finish();
-        startActivity(new Intent(closedCall.this,userHome.class));
+        startActivity(new Intent(resolvedCall.this,userHome.class));
     }
     public void loadClosedCall(Integer UserId, Integer companyId){
         //GetSelectedCallByID
@@ -206,7 +206,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
             final ProgressDialog pDialog = new ProgressDialog(this);
             pDialog.setMessage("Loading...");
             pDialog.show();
-            Integer statusId = 7;
+            Integer statusId = 6;
             final String url = urlClass.getUrl()+"GetCalls?status_id=" + statusId +"&UserId=" + UserId +"&companyId=" + companyId;
 
             JsonArrayRequest jsonObjReq = new JsonArrayRequest(Request.Method.POST,
@@ -215,7 +215,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
 
                         @Override
                         public void onResponse(JSONArray jsonArray) {
-                            Log.d("Closed Call", jsonArray.toString()+" url:"+url);
+                            Log.d("Resolved Call", jsonArray.toString()+" url:"+url);
 
                             pDialog.hide();
                             try {
@@ -230,7 +230,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                         String system_call_id = jsonObject.getString("Id");
                                         String callLife = jsonObject.getString("callAlive");
                                         String time = jsonObject.getString("modifyAt");
-                                        if(CallStatusName.equals("Closed")) {
+                                        if(CallStatusName.equals("Partially Resolved")) {
                                             try {
                                                 Contact pendingContact = new Contact();
                                                 pendingContact.setCustomer_name(CustomerName);
@@ -262,7 +262,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                             try {
                                                 checkInternet = urlClass.checkInternet();
                                                 if(checkInternet){
-                                                    Intent callDetails = new Intent(closedCall.this,tabCallDetails.class);
+                                                    Intent callDetails = new Intent(resolvedCall.this,tabCallDetails.class);
                                                     callDetails.putExtra("callId",callId);
                                                     callDetails.putExtra("activity_name","Resolved Call View");
                                                     startActivity(callDetails);
@@ -314,7 +314,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
             queue.add(jsonObjReq);
         }catch (Exception e){
             e.printStackTrace();
-            Toast.makeText(closedCall.this,"closedCall:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+            Toast.makeText(resolvedCall.this,"closedCall:"+e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
         }
     }
     class loadClosedCall extends AsyncTask<Integer,String,String> {
@@ -322,7 +322,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
         String url = urlClass.getUrl();
         String NameSpace = urlClass.NameSpace();
         public ProgressDialog dialog =
-                new ProgressDialog(closedCall.this);
+                new ProgressDialog(resolvedCall.this);
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -337,7 +337,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
             String result = "";
             Integer UserID = params[0];
             Integer companyId = params[1];
-            Integer statusId = 7;
+            Integer statusId = 6;
             String SOAP_ACTION = NameSpace+"GetCalls";
             SoapObject request = new SoapObject(NameSpace, "GetCalls");
             request.addProperty("UserID",UserID);
@@ -390,7 +390,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                             String system_call_id = jsonObject.getString("Id");
                             String callLife = jsonObject.getString("callAlive");
                             String time = jsonObject.getString("modifyAt");
-                            if(CallStatusName.equals("Closed")) {
+                            if(CallStatusName.equals("Partially Resolved")) {
                                 try {
                                     Contact pendingContact = new Contact();
                                     pendingContact.setCustomer_name(CustomerName);
@@ -421,9 +421,9 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                 try {
                                     checkInternet = urlClass.checkInternet();
                                     if(checkInternet){
-                                        Intent callDetails = new Intent(closedCall.this,tabCallDetails.class);
+                                        Intent callDetails = new Intent(resolvedCall.this,tabCallDetails.class);
                                         callDetails.putExtra("callId",callId);
-                                        callDetails.putExtra("activity_name","closed Call View");
+                                        callDetails.putExtra("activity_name","Resolved Call View");
                                         startActivity(callDetails);
                                         finish();
                                     } else{
