@@ -121,32 +121,34 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     Integer reasonId;
     Boolean checkInternet;
     TextView pd_txt;
-    String userLocation="";
-    Button btn_add_description,btn_attend_call,btn_call_action;
-    String userChoosenTask="";
-    String selectedImage=null;
-    private int REQUEST_CAMERA = 0, SELECT_FILE = 1;
+    String userLocation = "";
+    Button btn_add_description, btn_attend_call, btn_call_action;
+    String userChoosenTask = "";
+    String selectedImage = null;
+    private final int REQUEST_CAMERA = 0;
+    private final int SELECT_FILE = 1;
     ImageView imageHolder;
     LinearLayout actionLayout;
+    TextView no_attachment;
     Button btn_upload;
-    String callStatusG ="0";
-    TextView call_veiw_id,call_veiw_date,call_veiw_rnumber,call_veiw_productNumber,call_time,
-            call_veiw_productBrand,call_veiw_productType,
-            call_view_issueDetails,call_details_customerName,call_details_subcustomerName,
-            call_details_mobileNumber,call_details_emailId,call_details_customerAddress,mTextMessage,
-            contract_number,contract_type,productName,product_details,serviceType,IssueType,IssuePriority,LocationCall;
+    String callStatusG = "0";
+    TextView call_veiw_id, call_veiw_date, call_veiw_rnumber, call_veiw_productNumber, call_time,
+            call_veiw_productBrand, call_veiw_productType,
+            call_view_issueDetails, call_details_customerName, call_details_subcustomerName,
+            call_details_mobileNumber, call_details_emailId, call_details_customerAddress, mTextMessage,
+            contract_number, contract_type, productName, product_details, serviceType, IssueType, IssuePriority, LocationCall;
     String selectedContract="0";
     LinearLayout layout_user;
     Uri fileUri;
     Spinner call_action_spinner, call_action_reason_spinner;
-    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+    private final BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             LinearLayout layout_user = (LinearLayout) findViewById(R.id.user_layout);
             AppBarLayout.LayoutParams lparams = new AppBarLayout.LayoutParams(
                     AppBarLayout.LayoutParams.WRAP_CONTENT, AppBarLayout.LayoutParams.WRAP_CONTENT);
-            TextView tv=new TextView(tabCallDetails.this);
+            TextView tv = new TextView(tabCallDetails.this);
             switch (item.getItemId()) {
                 case R.id.navigation_home:
                     layout_user.removeAllViews();
@@ -447,13 +449,11 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                             }
                         });
                         gridview = (GridView) view_other.findViewById(R.id.gridview);
-
+                        no_attachment = view_other.findViewById(R.id.no_attachment);
                         if(!logedUserID.equals(0) || !CompanyID.equals(0)){
                             try {
                                 String callId = sharedpreferences.getString("clickedId","0");
                                 if(checkInternet){
-                                    //new loadClosedCall().execute(UserID,CompanyID);
-                                    Toast.makeText(tabCallDetails.this, ""+callId, Toast.LENGTH_SHORT).show();
                                     loadCallAttachment(logedUserID,CompanyID,callId,gridview);
                                 } else {
                                     onTaskCompleted("Internet connection failed, please check");
@@ -522,25 +522,28 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                             img.setImageUrl(imagepath);
                                             otherImagesList.add(img);
                                         } catch (Exception e) {
-                                            Log.e("displayCountryList: ",e.getLocalizedMessage());
+                                            Log.e("displayCountryList: ", e.getLocalizedMessage());
                                         }
                                     }
-                                    gridView.setAdapter(new ImageAdapter(getApplicationContext(),otherImagesList,urlClass.getUrl()));
+                                    gridView.setVisibility(View.VISIBLE);
+                                    no_attachment.setVisibility(View.GONE);
+                                    gridView.setAdapter(new ImageAdapter(getApplicationContext(), otherImagesList, urlClass.getUrl()));
                                     gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                         @Override
                                         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                            try{
+                                            try {
                                                 String img = otherImagesList.get(i).getImageUrl();
-                                                String url = urlClass.getFileUrl()+img;
+                                                String url = urlClass.getFileUrl() + img;
                                                 loadPhoto(url);
-                                            }catch (Exception e){
+                                            } catch (Exception e) {
                                                 e.printStackTrace();
                                             }
 
                                         }
                                     });
                                 } else {
-                                    onTaskCompleted("No Data found");
+                                    gridView.setVisibility(View.GONE);
+                                    no_attachment.setVisibility(View.VISIBLE);
                                 }
                             } catch (Exception ee){
                                 onTaskCompleted(ee.getLocalizedMessage());
@@ -1324,8 +1327,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 if(checkInternet){
                                     //new loadClosedCall().execute(UserID,CompanyID);
                                     imageHolder.setImageDrawable(null);
-                                    Toast.makeText(tabCallDetails.this, ""+callId, Toast.LENGTH_SHORT).show();
-                                    loadCallAttachment(logedUserID,CompanyID,callId,gridview);
+                                    selectedImage = null;
+                                    loadCallAttachment(logedUserID, CompanyID, callId, gridview);
                                 } else {
                                     onTaskCompleted("Internet connection failed, please check");
                                 }
@@ -1333,7 +1336,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 onTaskCompleted(e.getLocalizedMessage());
                             }
                         } else {
-                            Toast.makeText(tabCallDetails.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                            Toast.makeText(tabCallDetails.this, "Something went wrong, Try again.", Toast.LENGTH_LONG).show();
                         }
                       //  startActivity(new Intent(tabCallDetails.this,tabCallDetails.class).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     } else if(code.equals("0")){

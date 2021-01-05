@@ -111,6 +111,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
             android:orientation="vertical">
             <GridView
                 android:id="@+id/gridview"
@@ -120,11 +121,21 @@
                 android:verticalSpacing="10dp"
                 android:horizontalSpacing="10dp"
                 android:stretchMode="columnWidth"
+                android:visibility="gone"
                 android:gravity="center"
                 android:nestedScrollingEnabled="true"
                 android:layout_marginBottom="@dimen/activity_horizontal_margin"
-                android:paddingBottom="@dimen/activity_horizontal_margin"
-                />
+                android:paddingBottom="@dimen/activity_horizontal_margin" />
+
+            <TextView
+                android:id="@+id/no_attachment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginTop="@dimen/activity_horizontal_margin"
+                android:gravity="center_horizontal"
+                android:text="No Attachment"
+                android:textSize="10pt" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

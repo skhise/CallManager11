@@ -2,14 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Android-CallManager11.iml" filepath="$PROJECT_DIR$/.idea/modules/Android-CallManager11.iml" group="CallManager11" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/Android-CallManager11-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/Android-CallManager11-app.iml" group="CallManager11/app" />
       <module fileurl="file://$PROJECT_DIR$/CallManager.iml" filepath="$PROJECT_DIR$/CallManager.iml" />
-      <module fileurl="file://$PROJECT_DIR$/CallManager11.iml" filepath="$PROJECT_DIR$/CallManager11.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/CallManager11-app.iml" filepath="$PROJECT_DIR$/app/CallManager11-app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/CallManager12.iml" filepath="$PROJECT_DIR$/.idea/modules/CallManager12.iml" group="CallManager12" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/CallManager12-app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/CallManager12-app.iml" group="CallManager12/app" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/CallManager.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/CallManager.app.iml" />
     </modules>
   </component>
 </project>

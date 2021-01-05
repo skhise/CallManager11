@@ -26,12 +26,12 @@ public class UrlClass {
     }
     public  String getUrl(){
 
-        String URL = "http://sunshine.amcdesk.com/app_slim/v1/";
+        String URL = "http://login.amcdesk.com/app_slim/v1/";
         return URL;
     }
     public  String getFileUrl(){
 
-        String URL = "http://sunshine.amcdesk.com/api/app/";
+        String URL = "http://login.amcdesk.com/api/app/";
         return URL;
     }
     public String NameSpace(){

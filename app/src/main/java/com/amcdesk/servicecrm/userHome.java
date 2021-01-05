@@ -21,18 +21,19 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -80,6 +81,7 @@ public class userHome extends AppCompatActivity
     Intent intentL,intentN;
     TextView cmp;
     TextView gpsStatus;
+    ImageView btn_gps;
     int timeout = 5;
     LocationManager locationManager=null;
     CheckConnectivity checkConnectivity;
@@ -120,9 +122,12 @@ public class userHome extends AppCompatActivity
 
         alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-                checkLocation();
+                try {
+                    Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    startActivityForResult(intent, 100);
+                } catch (Exception e) {
+                    Toast.makeText(userHome.this, "User Activated GPS", Toast.LENGTH_LONG).show();
+                }
             }
         });
 
@@ -137,27 +142,25 @@ public class userHome extends AppCompatActivity
 
         alertDialog.show();
     }
-    public void checkLocation(){
-        locationManager  = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        if(locationManager!=null){
-            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                gpsStatus.setText("Your gps service disabled, click here to enable.");
-            } else{
-                gpsStatus.setText("Gps service enabled");
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == 100) {
+            checkLocation();
+        }
+    }
+
+    public void checkLocation() {
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if (locationManager != null) {
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                btn_gps.setImageResource(R.drawable.gps_off);
+            } else {
+                btn_gps.setImageResource(R.drawable.gps_on);
             }
-            gpsStatus.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-                        showSettingsAlert();
-                    } else {
-                        checkLocation();
-
-                        Toast.makeText(userHome.this, "Gps service already enabled on your device", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
         } else {
             Log.e("Excp","Location null");
         }
@@ -260,18 +263,18 @@ public class userHome extends AppCompatActivity
                             checkInternet = urlClass.checkInternet();
                             if(checkInternet){
                                 loadUSerDashboard(UserID,CompanyID);
-                            } else{
+                            } else {
                                 onTaskCompleted("Internet connection failed, please check");
                             }
-                        }catch (Exception ee){
+                        } catch (Exception ee) {
                             onTaskCompleted(ee.getMessage());
                         }
                     } else {
-                        Toast.makeText(userHome.this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                        Toast.makeText(userHome.this, "Something Went Wrong, Try Again", Toast.LENGTH_LONG).show();
                     }
 
-                }catch (Exception ee){
-                    Toast.makeText(userHome.this,"Unable to get user details, "+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                } catch (Exception ee) {
+                    Toast.makeText(userHome.this, "Something Went Wrong, Try Again" + ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -395,11 +398,11 @@ public class userHome extends AppCompatActivity
                 }
 
             } else {
-                Toast.makeText(this,"Unable to get user details, ",Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Something Went Wrong, Try Again", Toast.LENGTH_LONG).show();
             }
 
         }catch (Exception ee){
-            Toast.makeText(this,"Unable to get user details, "+ee.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Something Went Wrong, Try Again" + ee.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -533,19 +536,49 @@ public class userHome extends AppCompatActivity
                 Intent intent = new Intent(userHome.this, closedCall.class);
                 startActivity(intent);
                 finish();
-            } else{
+            } else {
                 onTaskCompleted("Internet connection failed, please check");
             }
-        }catch (Exception ee){
+        } catch (Exception ee) {
             onTaskCompleted(ee.getMessage());
         }
 
 
     }
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.user_home, menu);
+
+        try {
+            final MenuItem gps = menu.findItem(R.id.menu_gps);
+            btn_gps = (ImageView) gps.getActionView();
+            if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                btn_gps.setImageResource(R.drawable.gps_off);
+            } else {
+                btn_gps.setImageResource(R.drawable.gps_on);
+            }
+
+
+            btn_gps.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                        btn_gps.setImageResource(R.drawable.gps_off);
+                        showSettingsAlert();
+                    } else {
+                        btn_gps.setImageResource(R.drawable.gps_on);
+                        Toast.makeText(userHome.this, "Gps service enabled on your device", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(userHome.this, "" + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+
         return true;
     }
 
