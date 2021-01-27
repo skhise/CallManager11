@@ -227,7 +227,7 @@ public class locationService extends Service  {
         initializeTimerTaskNew(userName, userId, companyId);
 
         //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 5000, 5000); //
+        timer.schedule(timerTask, 60000, 60000); //
     }
     public void stoptimertask() {
         //stop the timer, if it's not already null

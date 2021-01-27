@@ -171,12 +171,9 @@ public class Login extends AppCompatActivity{
                                     } else {
                                         Toast.makeText(getApplicationContext(), "Invalid user details, please check login details", Toast.LENGTH_LONG).show();
                                     }
-
-
                                 } catch (Exception ee) {
 
                                 }
-
                             }
                         }, new Response.ErrorListener() {
 

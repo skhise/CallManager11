@@ -108,7 +108,7 @@ public class check_notification extends Service {
         initializeTimerTask(UserName,UserID,CompanyID);
 
         //schedule the timer, to wake up every 1 second
-        timer.schedule(timerTask, 5000, 5000); //
+        timer.schedule(timerTask, 60000, 60000); //
     }
 
     public class check_for_notification extends AsyncTask<String, String, String> {
