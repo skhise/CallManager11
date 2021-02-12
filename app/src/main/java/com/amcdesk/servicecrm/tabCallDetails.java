@@ -234,8 +234,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                     public void onClick(View v) {
                                         //your business logic
                                         try{
-                                            EditText description_edit =   (EditText)addDialogView1.findViewById(R.id.add_problem_description);
-                                            String  description = description_edit.getText().toString();
+                                            EditText description_edit = addDialogView1.findViewById(R.id.add_problem_description);
+                                            String description = description_edit.getText().toString();
                                             if(description.equals("")){
                                                 onTaskCompleted("Input required");
                                             } else {
@@ -278,9 +278,9 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 final View actionDialogView = factory.inflate(R.layout.action_dailog, null);
                                 final AlertDialog actionDialog = new AlertDialog.Builder(tabCallDetails.this).create();
 
-                                call_action_spinner = (Spinner) actionDialogView.findViewById(R.id.call_status_list);
-                                call_action_reason_spinner = (Spinner) actionDialogView.findViewById(R.id.call_actionTaken_list);
-                                final EditText action_note_txt = (EditText) actionDialogView.findViewById(R.id.action_note_txt);
+                                call_action_spinner = actionDialogView.findViewById(R.id.call_status_list);
+                                call_action_reason_spinner = actionDialogView.findViewById(R.id.call_actionTaken_list);
+                                final EditText action_note_txt = actionDialogView.findViewById(R.id.action_note_txt);
                                 spinnerLabelList = new ArrayList<String>();
                                 spinnerLabelListReason = new ArrayList<String>();
                                 spinnerIdList = new ArrayList<Integer>();
@@ -289,8 +289,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                 spinnerIdList.add(0);
                                 spinnerLabelListReason.add("Select action");
                                 spinnerIdListReason.add(0);
-                                try{
-                                    UserName     = sharedpreferences.getString(USERNAME,"");
+                                try {
+                                    UserName = sharedpreferences.getString(USERNAME, "");
                                     logedUserID       = sharedpreferences.getInt(UserId,0);
                                     CompanyID    = sharedpreferences.getInt(CompanyId,0);
                                     UuserRole    = sharedpreferences.getInt(USERROLE,0);
@@ -432,27 +432,29 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                     View view_other = inflater_other.inflate(R.layout.call_other, layout_user, false);
                     layout_user.addView(view_other);
                     otherImagesList = new ArrayList<OtherImage>();
-                    LinearLayout image_other_view = (LinearLayout) view_other.findViewById(R.id.image_other_view);
+                    LinearLayout image_other_view = view_other.findViewById(R.id.image_other_view);
                     if (callStatusG.equals("6") ||callStatusG.equals("7")) {
                         image_other_view.setVisibility(LinearLayout.GONE);
                     } else {
                         image_other_view.setVisibility(LinearLayout.VISIBLE);
                     }
 
-                    try{
-                        Button b = (Button)view_other.findViewById(R.id.btn_camera_open);
-                        imageHolder = (ImageView) view_other.findViewById(R.id.captured_image_other);
-                        btn_upload = (Button) view_other.findViewById(R.id.btn_upload);
+                    try {
+                        Button b = view_other.findViewById(R.id.btn_camera_open);
+                        imageHolder = view_other.findViewById(R.id.captured_image_other);
+                        btn_upload = view_other.findViewById(R.id.btn_upload);
+                        imageHolder.setImageDrawable(null);
+                        selectedImage = null;
                         b.setOnClickListener(new View.OnClickListener() {
                             public void onClick(View v) {
                                 selectImage();
                             }
                         });
-                        gridview = (GridView) view_other.findViewById(R.id.gridview);
+                        gridview = view_other.findViewById(R.id.gridview);
                         no_attachment = view_other.findViewById(R.id.no_attachment);
-                        if(!logedUserID.equals(0) || !CompanyID.equals(0)){
+                        if (!logedUserID.equals(0) || !CompanyID.equals(0)) {
                             try {
-                                String callId = sharedpreferences.getString("clickedId","0");
+                                String callId = sharedpreferences.getString("clickedId", "0");
                                 if(checkInternet){
                                     loadCallAttachment(logedUserID,CompanyID,callId,gridview);
                                 } else {
@@ -514,6 +516,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                             pDialog.hide();
                             try {
                                 if(jsonArray.length()>0){
+                                    otherImagesList.clear();
                                     for(int i=0;i<jsonArray.length();i++){
                                         JSONObject jsonObject = jsonArray.getJSONObject(i);
                                         String imagepath = jsonObject.getString("imagepath");
@@ -590,8 +593,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
         //dialog.setContentView(R.layout.custom_fullimage_dialog);
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View layout = inflater.inflate(R.layout.custom_fullimage_dialoge,null);
-        ImageView image = (ImageView) layout.findViewById(R.id.fullimage);
+        View layout = inflater.inflate(R.layout.custom_fullimage_dialoge, null);
+        ImageView image = layout.findViewById(R.id.fullimage);
 
         Picasso.with(this)
                 .load(url).into(image);
@@ -635,7 +638,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             if ((clickedId != null || clickedId != "0") && (CompanyID != null || CompanyID != 0)) {
                 try {
                     Integer cId = Integer.parseInt(clickedId);
-                    Log.e("clickedId->", cId + "");
                     if (checkInternet) {
                         //new getCallDetails().execute(logedUserID, cId, CompanyID);
                         getCallDetails(logedUserID,CompanyID,cId);
@@ -704,17 +706,17 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
     public void initializeInfoData(View initializeData) {
         try {
-            call_veiw_id = (TextView) initializeData.findViewById(R.id.call_veiw_id);
-            call_veiw_date = (TextView) initializeData.findViewById(R.id.call_veiw_date);
+            call_veiw_id = initializeData.findViewById(R.id.call_veiw_id);
+            call_veiw_date = initializeData.findViewById(R.id.call_veiw_date);
             // call_veiw_rnumber = (TextView)  initializeData.findViewById(R.id.call_veiw_rnumber);
-            call_veiw_productNumber = (TextView) initializeData.findViewById(R.id.call_veiw_productNumber);
-            call_veiw_productType = (TextView) initializeData.findViewById(R.id.call_veiw_productType);
-            call_view_issueDetails = (TextView) initializeData.findViewById(R.id.call_view_issueDetails);
-            call_details_customerName = (TextView) initializeData.findViewById(R.id.call_details_customerName);
-            call_details_subcustomerName = (TextView) initializeData.findViewById(R.id.call_details_subcustomerName);
-            call_details_mobileNumber = (TextView) initializeData.findViewById(R.id.call_details_mobileNumber);
-            call_details_emailId = (TextView) initializeData.findViewById(R.id.call_details_emailId);
-            call_details_customerAddress = (TextView) initializeData.findViewById(R.id.call_details_customerAddress);
+            call_veiw_productNumber = initializeData.findViewById(R.id.call_veiw_productNumber);
+            call_veiw_productType = initializeData.findViewById(R.id.call_veiw_productType);
+            call_view_issueDetails = initializeData.findViewById(R.id.call_view_issueDetails);
+            call_details_customerName = initializeData.findViewById(R.id.call_details_customerName);
+            call_details_subcustomerName = initializeData.findViewById(R.id.call_details_subcustomerName);
+            call_details_mobileNumber = initializeData.findViewById(R.id.call_details_mobileNumber);
+            call_details_emailId = initializeData.findViewById(R.id.call_details_emailId);
+            call_details_customerAddress = initializeData.findViewById(R.id.call_details_customerAddress);
             // call_time = (TextView)  initializeData.findViewById(R.id.call_time);
             serviceType = (TextView) findViewById(R.id.serviceType);
             IssueType = (TextView) findViewById(R.id.IssueType);
@@ -925,14 +927,14 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
         return super.onOptionsItemSelected(item);
     }
-    public void initializeActionData(View action_view){
+    public void initializeActionData(View action_view) {
 
-        btn_add_description = (Button) action_view.findViewById(R.id.btn_add_problem);
-        btn_attend_call = (Button) action_view.findViewById(R.id.btn_attend_call);
-        btn_call_action = (Button) action_view.findViewById(R.id.btn_call_action);
-        actionLayout = (LinearLayout) action_view.findViewById(R.id.actionLayout);
-        chat_message_list = (ListView) action_view.findViewById(R.id.call_action_text_list);
-        pd_txt = (TextView) action_view.findViewById(R.id.pd_txt);
+        btn_add_description = action_view.findViewById(R.id.btn_add_problem);
+        btn_attend_call = action_view.findViewById(R.id.btn_attend_call);
+        btn_call_action = action_view.findViewById(R.id.btn_call_action);
+        actionLayout = action_view.findViewById(R.id.actionLayout);
+        chat_message_list = action_view.findViewById(R.id.call_action_text_list);
+        pd_txt = action_view.findViewById(R.id.pd_txt);
         View footerView = ((LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.list_footer_view, null, false);
         //    chat_message_list.addFooterView(footerView);
     }
@@ -1454,8 +1456,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
                         @Override
                         public void onResponse(JSONArray jsonArray) {
-                            Log.d("getUserChat", jsonArray.toString());
-
                             pDialog.hide();
                             if(jsonArray.length()!=0){
                                 try {
@@ -1470,10 +1470,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                                 String TimeStampStr = jsonObject.getString("TimeStampStr");
                                                 Integer db_user = Integer.parseInt(UserId);
                                                 String Text = jsonObject.getString("Text");
-                                                Log.e("logedUserID",""+logedUserID);
-                                                Log.e("db_user",""+db_user);
                                                 if(db_user.equals(logedUserID)){
-                                                    Log.e("inside","equal");
                                                     chatMessage.setMessage(Text);
                                                     chatMessage.setDate_time(TimeStampStr);
                                                     chatMessage.setSide(1);
@@ -1494,11 +1491,9 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                         chat_message_list.setAdapter(chatArrayAdapter);
 
                                     } else {
-                                        Log.e("eee","No data found1111");
                                         onTaskCompleted("No Data found");
                                     }
                                 } catch (Exception ee){
-                                    Log.e("eee"," dd"+ee.getLocalizedMessage());
                                     onTaskCompleted(ee.getLocalizedMessage());
                                 }
                             } else{
@@ -1509,7 +1504,6 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    VolleyLog.d("Login", "Error: " + error.getMessage());
                     Toast.makeText(getApplicationContext(),"Error:"+error.getMessage(),Toast.LENGTH_LONG).show();
                     pDialog.hide();
                 }

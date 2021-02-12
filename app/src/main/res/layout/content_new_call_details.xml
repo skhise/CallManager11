@@ -47,6 +47,62 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
+                                    android:text="Action"
+                                    android:textColor="#525252"
+                                    android:textSize="15dp"
+                                    android:textStyle="bold" />
+
+                                <View
+                                    android:layout_width="0dp"
+                                    android:layout_height="1dp"
+                                    android:layout_margin="10dp"
+                                    android:layout_weight="1"
+                                    android:background="#dad9d9" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <Button
+                                    android:id="@+id/btn_accept_call"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="10dp"
+                                    android:layout_weight="1"
+                                    android:background="#4285F4"
+                                    android:text="Accept"
+                                    android:textColor="#fff" />
+
+                                <Button
+                                    android:id="@+id/btn_reject_call"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_margin="10dp"
+                                    android:layout_weight="1"
+                                    android:background="#F44336"
+                                    android:text="Reject"
+                                    android:textColor="#fff" />
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
                                     android:text="Call Info"
                                     android:textColor="#525252"
                                     android:textStyle="bold"
@@ -209,6 +265,7 @@
                                         android:id="@+id/call_details_mobileNumber"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
+                                        android:autoLink="phone"
                                         android:layout_weight="1"
                                         android:text=""
                                         android:textSize="20dp" />
@@ -530,64 +587,6 @@
                                 android:textSelectHandleLeft="@color/black_overlay"
                                 android:textSelectHandleRight="@color/black_overlay"
                                 android:textStyle="normal" />
-
-
-                        </LinearLayout>
-
-
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="center"
-                                    android:text="Action"
-                                    android:textColor="#525252"
-                                    android:textStyle="bold"
-                                    android:textSize="15dp" />
-
-                                <View
-                                    android:layout_width="0dp"
-                                    android:layout_height="1dp"
-                                    android:layout_margin="10dp"
-                                    android:layout_weight="1"
-                                    android:background="#dad9d9" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal">
-
-                                <Button
-                                    android:id="@+id/btn_accept_call"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_margin="10dp"
-                                    android:layout_weight="1"
-                                    android:background="#4285F4"
-                                    android:text="Accept"
-                                    android:textColor="#fff" />
-
-                                <Button
-                                    android:id="@+id/btn_reject_call"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_margin="10dp"
-                                    android:layout_weight="1"
-                                    android:background="#F44336"
-                                    android:text="Reject"
-                                    android:textColor="#fff" />
-                            </LinearLayout>
 
 
                         </LinearLayout>

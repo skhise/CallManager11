@@ -167,21 +167,16 @@ public class userHome extends AppCompatActivity
         LocationListener locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-
             }
-
             @Override
             public void onStatusChanged(String provider, int status, Bundle extras) {
-
             }
-
             @Override
             public void onProviderEnabled(String provider) {
                 if(provider.equals("gps")){
                     checkLocation();
                 }
             }
-
             @Override
             public void onProviderDisabled(String provider) {
                 if(provider.equals("gps")){
@@ -365,25 +360,25 @@ public class userHome extends AppCompatActivity
             onTaskCompleted(ee.getMessage());
         }
         try{
-            sharedpreferences   = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-            String UserName     = sharedpreferences.getString(USERNAME,"");
-            Integer UserID       = sharedpreferences.getInt(UserId,0);
-            Integer CompanyID    = sharedpreferences.getInt(CompanyId,0);
-            Integer UuserRole    = sharedpreferences.getInt(USERROLE,0);
-            Boolean IsUseractive = sharedpreferences.getBoolean(IsUserActive,false);
+            sharedpreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            String UserName = sharedpreferences.getString(USERNAME, "");
+            Integer UserID = sharedpreferences.getInt(UserId, 0);
+            Integer CompanyID = sharedpreferences.getInt(CompanyId, 0);
+            Integer UuserRole = sharedpreferences.getInt(USERROLE, 0);
+            Boolean IsUseractive = sharedpreferences.getBoolean(IsUserActive, false);
             login_engineer_name.setText(UserName);
-            View header=navigationView.getHeaderView(0);
-            TextView name = (TextView)header.findViewById(R.id.userName);
-            TextView email = (TextView)header.findViewById(R.id.userEmail);
-            cmp = (TextView)header.findViewById(R.id.userCompanyName);
+            View header = navigationView.getHeaderView(0);
+            TextView name = header.findViewById(R.id.userName);
+            TextView email = header.findViewById(R.id.userEmail);
+            cmp = header.findViewById(R.id.userCompanyName);
             name.setText(UserName);
             email.setText(UserName);
 
-            if(!UserID.equals(0) && !CompanyID.equals(0)){
-                Log.e("UserID",""+UserID);
-                try{
-                    if(checkInternet){
-                        loadUSerDashboard(UserID,CompanyID);
+            if (!UserID.equals(0) && !CompanyID.equals(0)) {
+                Log.e("UserID", "" + UserID);
+                try {
+                    if (checkInternet) {
+                        loadUSerDashboard(UserID, CompanyID);
                         Date currentTime = Calendar.getInstance().getTime();
                         Intent ll24 = new Intent(getApplicationContext(), AlarmReceiverLifeLog.class);
                         PendingIntent recurringLl24 = PendingIntent.getBroadcast(getApplicationContext(), 0, ll24, PendingIntent.FLAG_CANCEL_CURRENT);

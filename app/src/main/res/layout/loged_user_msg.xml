@@ -11,9 +11,9 @@
         android:layout_gravity="right"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:textSize="5pt"
-        android:text="Sample"
+        android:textSize="6pt"
         android:textColor="#FF5722" />
+
     <TextView
         android:id="@+id/msgr"
         android:layout_width="wrap_content"
@@ -21,6 +21,6 @@
         android:layout_gravity="right"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
-        android:text="Sample"
-        android:textColor="#00BCD4" />
+        android:textColor="#000"
+        android:textSize="6pt" />
 </LinearLayout>
