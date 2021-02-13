@@ -114,7 +114,7 @@ public class locationService extends Service  {
                 longitude = Longitude;
                 try {
                     SharedPreferences locationpref = getApplication()
-                            .getSharedPreferences("user_details", MODE_WORLD_READABLE);
+                            .getSharedPreferences("user_details", MODE_PRIVATE);
                     SharedPreferences.Editor prefsEditor = locationpref.edit();
                     prefsEditor.putString("Longitude", Longitude + "");
                     prefsEditor.putString("Latitude", Latitude + "");

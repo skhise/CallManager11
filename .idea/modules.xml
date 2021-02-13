@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CallManager.iml" filepath="$PROJECT_DIR$/CallManager.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/CallManager.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/CallManager.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/CallManager11.iml" filepath="$PROJECT_DIR$/.idea/modules/CallManager11.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/CallManager11.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/CallManager11.app.iml" />
     </modules>
   </component>
 </project>

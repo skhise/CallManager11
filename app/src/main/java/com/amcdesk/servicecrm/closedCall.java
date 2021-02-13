@@ -230,6 +230,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                         String system_call_id = jsonObject.getString("Id");
                                         String callLife = jsonObject.getString("callAlive");
                                         String time = jsonObject.getString("modifyAt");
+                                        String status_name = jsonObject.optString("status_name");
                                         if(CallStatusName.equals("Closed")) {
                                             try {
                                                 Contact pendingContact = new Contact();
@@ -241,6 +242,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                                 pendingContact.setUnreadMessages(Integer.parseInt(UnreadMessages));
                                                 pendingContact.setCallAlive(callLife);
                                                 pendingContact.setActionTime(Integer.parseInt(time));
+                                                pendingContact.setCall_status(status_name);
                                                 contactList.add(pendingContact);
                                             } catch (Exception e) {
                                                 Log.e("displayCountryList: ",e.getLocalizedMessage());
@@ -253,10 +255,12 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                         @Override
                                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                             String callId = contactList.get(position).getSystem_call_id();
+                                            String call_status = contactList.get(position).getCall_status();
                                             SharedPreferences.Editor editor =sharedpreferences.edit();
                                             editor.putInt("ActivityCode",4);
                                             editor.remove("clickedId");
                                             editor.putString("clickedId",callId);
+                                            editor.putString("call_status",call_status);
                                             editor.apply();
                                             editor.commit();
                                             try {
@@ -265,6 +269,7 @@ public class closedCall extends AppCompatActivity implements ontaskComplet,Searc
                                                     Intent callDetails = new Intent(closedCall.this,tabCallDetails.class);
                                                     callDetails.putExtra("callId",callId);
                                                     callDetails.putExtra("activity_name","Resolved Call View");
+                                                    callDetails.putExtra("call_status", call_status);
                                                     startActivity(callDetails);
                                                     finish();
                                                 } else{

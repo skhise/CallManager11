@@ -80,7 +80,6 @@ public class userHome extends AppCompatActivity
     boolean checkInternet;
     Intent intentL,intentN;
     TextView cmp;
-    TextView gpsStatus;
     ImageView btn_gps;
     int timeout = 5;
     LocationManager locationManager=null;
@@ -199,7 +198,6 @@ public class userHome extends AppCompatActivity
         login_engineer_name = (TextView) findViewById(R.id.login_engineer_name);
         urlClass = new UrlClass(userHome.this);
         checkInternet = urlClass.checkInternet();
-        gpsStatus = (TextView) findViewById(R.id.gpsStatus);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
         intentN = new Intent(userHome.this,check_notification.class);

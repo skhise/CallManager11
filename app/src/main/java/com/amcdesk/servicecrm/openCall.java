@@ -217,14 +217,15 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
                                 if(jsonArray.length()>0){
                                     for(int i=0;i<jsonArray.length();i++){
                                         JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                        String CallNo = jsonObject.getString("CallNo");
-                                        String Date = jsonObject.getString("CallDatestr");
-                                        String CustomerName = jsonObject.getString("CustomerName");
-                                        String CallStatusName = jsonObject.getString("CallStatusName");
-                                        String UnreadMessages = jsonObject.getString("UnreadMessages");
-                                        String system_call_id = jsonObject.getString("Id");
-                                        String callLife = jsonObject.getString("callAlive");
-                                        String time = jsonObject.getString("modifyAt");
+                                        String CallNo = jsonObject.optString("CallNo");
+                                        String Date = jsonObject.optString("CallDatestr");
+                                        String CustomerName = jsonObject.optString("CustomerName");
+                                        String CallStatusName = jsonObject.optString("CallStatusName");
+                                        String UnreadMessages = jsonObject.optString("UnreadMessages");
+                                        String system_call_id = jsonObject.optString("Id");
+                                        String callLife = jsonObject.optString("callAlive");
+                                        String time = jsonObject.optString("modifyAt");
+                                        String status_name = jsonObject.optString("status_name");
                                         if(CallStatusName.equals("Open")) {
                                             try {
                                                 Contact pendingContact = new Contact();
@@ -236,6 +237,7 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
                                                 pendingContact.setUnreadMessages(Integer.parseInt(UnreadMessages));
                                                 pendingContact.setCallAlive(callLife);
                                                 pendingContact.setActionTime(Integer.parseInt(time));
+                                                pendingContact.setCall_status(status_name);
                                                 contactList.add(pendingContact);
                                             } catch (Exception e) {
                                                 Log.e("Call_List: ",e.getLocalizedMessage());
@@ -248,10 +250,12 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
                                         @Override
                                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                             String callId = contactList.get(position).getSystem_call_id();
+                                            String call_status = contactList.get(position).getCall_status();
                                             SharedPreferences.Editor editor =sharedpreferences.edit();
                                             editor.putInt("ActivityCode",2);
                                             editor.remove("clickedId");
                                             editor.putString("clickedId",callId);
+                                            editor.putString("call_status",call_status);
                                             editor.putInt("callId",Integer.parseInt(callId));
                                             editor.apply();
                                             editor.commit();
@@ -263,6 +267,7 @@ public class openCall extends AppCompatActivity implements ontaskComplet,SearchV
                                                     Log.e("callId->",callId+"");
                                                     Intent callDetails = new Intent(openCall.this,tabCallDetails.class);
                                                     callDetails.putExtra("activity_name","Open Call View");
+                                                    callDetails.putExtra("call_status", call_status);
                                                     startActivity(callDetails);
                                                     finish();
                                                 } else {

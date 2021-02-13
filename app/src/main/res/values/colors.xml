@@ -10,4 +10,9 @@
     <color name="cardBG">#E3F2F5</color>
     <color name="black">#000</color>
     <color name="whitegray">#F4F4F4</color>
+    <color name="newcall">#4285F4</color>
+    <color name="opencall">#0d47a1</color>
+    <color name="pendingcall">#FF8800</color>
+    <color name="resolvedcall">#00C851</color>
+    <color name="closedcall">#00C851</color>
 </resources>

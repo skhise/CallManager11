@@ -141,6 +141,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
     LinearLayout layout_user;
     Uri fileUri;
     Spinner call_action_spinner, call_action_reason_spinner;
+
     private final BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
         @Override
@@ -323,6 +324,9 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
                                         }
                                     });
+
+
+
                                     ArrayAdapter<String> dataAdapterReason = new ArrayAdapter<String>(tabCallDetails.this, android.R.layout.simple_spinner_item, spinnerLabelListReason);
                                     dataAdapterReason.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                                     call_action_reason_spinner.setAdapter(dataAdapterReason);
@@ -338,6 +342,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
 
                                         }
                                     });
+
+
 
                                 }catch (Exception ee){
                                     onTaskCompleted(ee.getLocalizedMessage());
@@ -621,6 +627,8 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
             Intent acName = getIntent();
             String activity_name = acName.getStringExtra("activity_name");
             getSupportActionBar().setTitle(activity_name);
+
+
             layout_user = (LinearLayout) findViewById(R.id.user_layout);
             layout_user.removeAllViews();
             LayoutInflater inflater_default = LayoutInflater.from(tabCallDetails.this);
@@ -1392,6 +1400,7 @@ public class tabCallDetails extends AppCompatActivity implements ontaskComplet{
                                             spinnerLabelList.add(StatusName);
                                             spinnerIdList.add(CallstatusId);
                                         }
+
                                     } else {
                                         onTaskCompleted("No Data found spinner");
                                     }

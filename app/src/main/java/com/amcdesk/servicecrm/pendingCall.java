@@ -226,14 +226,15 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                     try{
                                         for(int i=0;i<jsonArray.length();i++){
                                             JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                            String CallNo = jsonObject.getString("CallNo");
-                                            String Date = jsonObject.getString("CallDatestr");
-                                            String CustomerName = jsonObject.getString("CustomerName");
-                                            String CallStatusName = jsonObject.getString("CallStatusName");
-                                            String system_call_id = jsonObject.getString("Id");
-                                            String UnreadMessages = jsonObject.getString("UnreadMessages");
-                                            String callLife = jsonObject.getString("callAlive");
-                                            String time = jsonObject.getString("modifyAt");
+                                            String CallNo = jsonObject.optString("CallNo");
+                                            String Date = jsonObject.optString("CallDatestr");
+                                            String CustomerName = jsonObject.optString("CustomerName");
+                                            String CallStatusName = jsonObject.optString("CallStatusName");
+                                            String system_call_id = jsonObject.optString("Id");
+                                            String UnreadMessages = jsonObject.optString("UnreadMessages");
+                                            String callLife = jsonObject.optString("callAlive");
+                                            String time = jsonObject.optString("modifyAt");
+                                            String status_name = jsonObject.optString("status_name");
                                             if(CallStatusName.equals("Pending")) {
                                                 try {
                                                     Contact pendingContact = new Contact();
@@ -245,6 +246,7 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                                     pendingContact.setUnreadMessages(Integer.parseInt(UnreadMessages));
                                                     pendingContact.setCallAlive(callLife);
                                                     pendingContact.setActionTime(Integer.parseInt(time));
+                                                    pendingContact.setCall_status(status_name);
                                                     contactList.add(pendingContact);
                                                 } catch (Exception e) {
                                                     Log.e("displayCountryList: ",e.getLocalizedMessage()+"time:"+time);
@@ -262,11 +264,16 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                                 try{
                                                     String callId = contactList.get(position).getSystem_call_id();
+                                                    String call_status = contactList.get(position).getCall_status();
+                                                    Toast.makeText(pendingCall.this, ""+call_status, Toast.LENGTH_SHORT).show();
+
                                                     SharedPreferences.Editor editor =sharedpreferences.edit();
                                                     editor.putInt("ActivityCode",3);
                                                     editor.remove("clickedId");
                                                     editor.putString("clickedId",callId);
                                                     editor.putInt("callId",Integer.parseInt(callId));
+                                                    editor.putString("call_status",call_status);
+
                                                     editor.apply();
                                                     editor.commit();
                                                     try {
@@ -274,6 +281,7 @@ public class pendingCall extends AppCompatActivity implements ontaskComplet,Sear
                                                         if (checkInternet) {
                                                             Intent callDetails = new Intent(pendingCall.this, tabCallDetails.class);
                                                             callDetails.putExtra("activity_name", "Pending Call View");
+                                                            callDetails.putExtra("call_status", call_status);
                                                             startActivity(callDetails);
                                                             finish();
                                                         }else {

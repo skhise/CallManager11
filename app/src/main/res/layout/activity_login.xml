@@ -52,6 +52,7 @@
                 android:layout_marginStart="@dimen/text_margin"
                 android:layout_marginTop="@dimen/text_margin"
                 android:layout_marginEnd="@dimen/text_margin"
+                android:inputType="textPassword"
                 android:background="@drawable/rounded_corner_edit"
                 android:hint="Password"
                 android:paddingLeft="@dimen/fab_margin" />

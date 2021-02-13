@@ -19,6 +19,7 @@
             android:layout_height="match_parent"
             android:id="@+id/layout"
             >
+
             <ImageView
                 android:id="@+id/header_cover_image"
                 android:layout_width="match_parent"
@@ -96,276 +97,223 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:gravity="center_horizontal"
-                android:layout_marginTop="20dp"
+
                 android:orientation="vertical">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="10dp"
-                        android:orientation="vertical">
-
-                        <Button
-                            android:id="@+id/new_call"
-                            android:layout_width="230dp"
-                            android:layout_height="99dp"
-                            android:layout_gravity="center_horizontal"
-                            android:src="@drawable/select"
-                            android:onClick="showNewCall"
-                            android:text="0"
-                            android:textSize="30dp"
-                            android:padding="25dp"
-                            android:background="#4285F4"
-                            android:textColor="#fff"
-                            />
-                        <TextView
-                            android:id="@+id/new_call_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignTop="@id/new_call"
-                            android:layout_alignRight="@id/new_call"
-                            android:layout_gravity="top|start"
-                            android:text="10"
-                            android:translationZ="@dimen/activity_horizontal_margin"
-                            android:visibility="gone"
-                            android:textColor="#FFF"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:background="@drawable/badge_circle"/>
-
-                        <TextView
-                            android:id="@+id/textView2"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:gravity="center_horizontal"
-                            android:layout_below="@id/new_call"
-                            android:padding="10dp"
-                            android:text="New Call" />
-
-                    </RelativeLayout>
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="10dp"
-                        android:orientation="vertical">
-
-                        <Button
-                            android:id="@+id/open_call"
-                            android:layout_width="230dp"
-                            android:layout_height="99dp"
-                            android:layout_gravity="center_horizontal"
-                            android:background="#0d47a1"
-                            android:onClick="showOpenCall"
-                            android:padding="25dp"
-                            android:src="@drawable/select"
-                            android:text="0"
-                            android:textColor="#fff"
-                            android:textSize="30dp" />
-                        <TextView
-                            android:id="@+id/new_open_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignTop="@id/open_call"
-                            android:layout_alignRight="@id/open_call"
-                            android:layout_gravity="top|start"
-                            android:text="10"
-                            android:translationZ="@dimen/activity_horizontal_margin"
-                            android:textColor="#FFF"
-                            android:textSize="16sp"
-                            android:visibility="gone"
-                            android:textStyle="bold"
-                            android:background="@drawable/badge_circle"/>
-
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:padding="10dp"
-                            android:layout_below="@id/open_call"
-                            android:gravity="center_horizontal"
-                            android:text="Open Call"/>
-
-                    </RelativeLayout>
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="10dp"
-                        android:orientation="vertical">
-
-                        <Button
-                            android:id="@+id/pending_call"
-                            android:layout_width="230dp"
-                            android:layout_height="99dp"
-                            android:text="0"
-                            android:textSize="30dp"
-                            android:onClick="showPendingCall"
-                            android:padding="25dp"
-                            android:layout_gravity="center_horizontal"
-                            android:textColor="#fff"
-                            android:background="#FF8800"
-                            android:src="@drawable/select" />
-                        <TextView
-                            android:id="@+id/new_pending_count"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignTop="@id/pending_call"
-                            android:layout_alignRight="@id/pending_call"
-                            android:layout_gravity="top|start"
-                            android:text="10"
-                            android:translationZ="@dimen/activity_horizontal_margin"
-                            android:textColor="#FFF"
-                            android:visibility="gone"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:background="@drawable/badge_circle"/>
-
-                        <TextView
-                            android:id="@+id/textView3"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:gravity="center_horizontal"
-                            android:padding="10dp"
-                            android:layout_below="@id/pending_call"
-                            android:text="Pending Call" />
-
-                    </RelativeLayout>
-
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="250dp"
-                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:background="@color/newcall"
                     android:layout_weight="1"
-                    android:layout_gravity=""
+                    android:onClick="showNewCall"
+                    android:padding="10dp"
                     android:orientation="horizontal">
 
-
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <Button
+                        android:id="@+id/new_call"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:layout_gravity="center_horizontal"
+                        android:src="@drawable/select"
 
-                        <Button
-                            android:id="@+id/resolved_call"
-                            android:layout_width="230dp"
-                            android:layout_height="99dp"
-                            android:layout_gravity="center_horizontal"
-                            android:background="#00C851"
-                            android:onClick="showResolvedCall"
-                            android:padding="25dp"
-                            android:src="@drawable/select"
-                            android:text="0"
-                            android:textColor="#fff"
-                            android:textSize="30dp" />
+                        android:text="0"
+                        android:textSize="30dp"
+                        android:textColor="#fff"
+                        />
 
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:gravity="center_horizontal"
-                            android:padding="10dp"
-                            android:text="Resolved Call" />
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="250dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="horizontal">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="10dp"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <Button
-                                android:id="@+id/closed_call"
-                                android:layout_width="230dp"
-                                android:layout_height="99dp"
-                                android:layout_gravity="center_horizontal"
-                                android:background="#00C851"
-                                android:onClick="showClosedCall"
-                                android:padding="25dp"
-                                android:src="@drawable/select"
-                                android:text="0"
-                                android:textColor="#fff"
-                                android:textSize="30dp" />
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center_horizontal"
-                                android:gravity="center_horizontal"
-                                android:padding="10dp"
-                                android:text="Closed Call" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:id="@+id/graph"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_gravity="center_vertical"
-                        android:gravity="center_vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="5dp"
-                            android:text="GPS Status"/>
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="2dp"
-                            android:layout_margin="5dp"
-                            android:background="@drawable/squre"/>
-                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/gpsStatus"
-                        android:layout_width="match_parent"
+                        android:id="@+id/new_call_txt"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_margin="5dp"
-                        android:background="@drawable/squre"
-                        android:textStyle="bold|italic"
-                        android:textColor="#FA0101"
-                        android:gravity="center_horizontal"
-                        android:text="Your gps service is off"/>
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:layout_below="@id/new_call"
+                        android:textColor="@color/white"
+                        android:textSize="12pt"
+                        android:paddingLeft="10dp"
+                        android:textStyle="bold"
+                        android:text="New Call" />
+                    <TextView
+                        android:id="@+id/new_call_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@id/new_call_txt"
+                        android:layout_alignRight="@id/new_call_txt"
+                        android:layout_gravity="top|start"
+                        android:text="10"
+                        android:translationZ="@dimen/activity_horizontal_margin"
+                        android:visibility="gone"
+                        android:textColor="#FFF"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/badge_circle"/>
 
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:layout_weight="1"
+                    android:background="@color/opencall"
+                    android:orientation="horizontal"
+                    android:onClick="showOpenCall"
+                    android:padding="10dp">
+
+                    <Button
+                        android:id="@+id/open_call"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+
+                        android:src="@drawable/select"
+                        android:text="0"
+                        android:textColor="#fff"
+                        android:textSize="30dp" />
+                    <TextView
+                        android:id="@+id/open_call_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_below="@id/open_call"
+                        android:gravity="center_vertical"
+                        android:textColor="@color/white"
+                        android:textSize="12pt"
+                        android:paddingLeft="10dp"
+                        android:textStyle="bold"
+                        android:text="Open Call"/>
+                    <TextView
+                        android:id="@+id/new_open_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@id/open_call_txt"
+                        android:layout_alignRight="@id/open_call_txt"
+                        android:layout_gravity="top|start"
+                        android:text="10"
+                        android:translationZ="@dimen/activity_horizontal_margin"
+                        android:textColor="#FFF"
+                        android:textSize="16sp"
+                        android:visibility="gone"
+                        android:textStyle="bold"
+                        android:background="@drawable/badge_circle"/>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="horizontal"
+                    android:padding="10dp"
+                    android:onClick="showPendingCall"
+                    android:background="@color/pendingcall">
+
+                    <Button
+                        android:id="@+id/pending_call"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textSize="30dp"
+
+                        android:layout_gravity="center_horizontal"
+                        android:textColor="#fff"
+                        android:src="@drawable/select" />
+
+
+                    <TextView
+                        android:id="@+id/pending_call_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:layout_below="@id/pending_call"
+                        android:textColor="@color/white"
+                        android:textSize="12pt"
+                        android:textStyle="bold"
+                        android:paddingLeft="10dp"
+                        android:text="Pending Call" />
+                    <TextView
+                        android:id="@+id/new_pending_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignTop="@id/pending_call_txt"
+                        android:layout_alignRight="@id/pending_call_txt"
+                        android:layout_gravity="top|start"
+                        android:text="10"
+                        android:translationZ="@dimen/activity_horizontal_margin"
+                        android:textColor="#FFF"
+                        android:visibility="gone"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/badge_circle"/>
+
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="horizontal"
+                    android:padding="10dp"
+                    android:onClick="showResolvedCall"
+                    android:background="@color/resolvedcall">
+
+                    <Button
+                        android:id="@+id/resolved_call"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+
+                        android:src="@drawable/select"
+                        android:text="0"
+                        android:textColor="#fff"
+                        android:textSize="30dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:text="Resolved Call"
+                        android:textColor="@color/white"
+                        android:textSize="12pt"
+                        android:paddingLeft="10dp"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="10dp"
+                    android:orientation="horizontal"
+                    android:padding="10dp"
+                    android:onClick="showClosedCall"
+                    android:background="@color/closedcall">
+
+                    <Button
+                        android:id="@+id/closed_call"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+
+                        android:src="@drawable/select"
+                        android:text="0"
+                        android:textColor="#fff"
+                        android:textSize="30dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:gravity="center_vertical"
+                        android:textColor="@color/white"
+                        android:textSize="12pt"
+                        android:textStyle="bold"
+                        android:paddingLeft="10dp"
+                        android:text="Closed Call" />
+
+                </LinearLayout>
+
             </LinearLayout>
         </ScrollView>
 
